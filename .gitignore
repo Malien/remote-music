@@ -62,3 +62,7 @@ typings/
 
 # packaged elecron apps
 out
+
+# System files
+.DS_Store
+.Thumbs
