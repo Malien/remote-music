@@ -6,7 +6,8 @@ let win: BrowserWindow = null
 function createWindow(){
     win = new BrowserWindow({
         width: 600,
-        height: 400
+        height: 400,
+        frame: true
     });
 
     win.loadFile("src/app/index.html");

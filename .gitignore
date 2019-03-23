@@ -63,6 +63,9 @@ typings/
 # packaged elecron apps
 out
 
+# compiled js files
+main.js
+
 # System files
 .DS_Store
 .Thumbs
