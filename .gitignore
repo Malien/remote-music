@@ -65,6 +65,7 @@ out
 
 # compiled js files
 main.js
+src/*/*.js
 
 # System files
 .DS_Store

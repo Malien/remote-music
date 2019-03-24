@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
-    "build": "tsc main.ts && electron ."
+    "build": "tsc main.ts"
   },
   "repository": {
     "type": "git",

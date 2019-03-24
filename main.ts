@@ -1,30 +1,33 @@
-import { BrowserWindow, app } from 'electron';
-import { platform } from 'os';
+import { BrowserWindow, app } from 'electron'
+import { platform } from 'os'
+
+import {Preferences, prefPath} from "./src/core/preferences"
+
 let fs = require('fs');
 
-var preferencePath = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + 'Library/Preferences' : process.env.HOME + "/.local/share")
-preferencePath += "/remote-music-preference.json"
+let requireSetup = !fs.existsSync(prefPath)
 
-let requireSetup = fs.existsSync(preferencePath)
+let win: BrowserWindow
 
-let win: BrowserWindow = null
-
-function createWindow(){
+function createWindow(): BrowserWindow{
     win = new BrowserWindow({
         width: 600,
         height: 400,
         frame: true
     })
 
-    win.loadFile("src/app/index.html");
+    win.loadFile("src/app/index.html")
+    return win
 }
 
 app.on('ready', (launchParams) => {
+    win = createWindow();
     if (requireSetup) {
-        //Show setup window first
+        win.webContents.openDevTools()
+        let pref = new Preferences("localhost", true, true)
+        pref.save(prefPath)
     }
-    createWindow();
-});
+})
 
 app.on('window-all-closed', () =>{
     if (platform() != "darwin"){
