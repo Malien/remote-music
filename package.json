@@ -27,5 +27,12 @@
     "electron": "^4.1.1",
     "electron-packager": "^13.1.1",
     "typescript": "^3.3.4000"
+  },
+  "dependencies": {
+    "ws": "^6.2.0"
+  },
+  "optionalDependencies": {
+    "bufferutil": "^4.0.1",
+    "utf-8-validate": "^5.0.2"
   }
 }
