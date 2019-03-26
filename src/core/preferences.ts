@@ -36,7 +36,7 @@ export function readPref(path: string): Preferences {
     return new Preferences(parsedData["serverAddr"], parsedData["isCleint"], parsedData["isServer"])
 }
 
-var preferencePath = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + 'Library/Preferences' : process.env.HOME + "/.local/share")
+var preferencePath = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Preferences' : process.env.HOME + "/.local/share")
 preferencePath += "/remote-music-preference.json"
 
 export let prefPath = preferencePath

@@ -21,7 +21,7 @@ function createWindow(): BrowserWindow{
 }
 
 app.on('ready', (launchParams) => {
-    win = createWindow();
+    win = createWindow()
     if (requireSetup) {
         win.webContents.openDevTools()
         let pref = new Preferences("localhost", true, true)
