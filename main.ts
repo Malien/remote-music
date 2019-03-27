@@ -1,10 +1,9 @@
 import { BrowserWindow, app } from 'electron'
-import { platform, type } from 'os'
+import { platform } from 'os'
+import * as fs from 'fs';
 
 import { Preferences, prefPath, ServerType, readPref } from "./src/core/preferences"
 import { ServerInterconnect } from './src/core/server';
-
-let fs = require('fs');
 
 let requireSetup = !fs.existsSync(prefPath)
 
