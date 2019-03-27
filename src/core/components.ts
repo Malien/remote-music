@@ -1,4 +1,3 @@
-import {  } from 'crypto';
 let uuid = require('uuid/v1')
 
 export class RemotePlayer {
