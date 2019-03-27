@@ -62,6 +62,7 @@ export class WSCientServer implements ClientServer {
     }
 
     private onConnection(ws: WebSocket){
+        ws.send("Hello")
         ws.on('message', (data) => {
             this.onMessage(ws, new WSClient(ws), data)
         })

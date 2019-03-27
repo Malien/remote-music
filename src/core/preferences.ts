@@ -1,26 +1,22 @@
 let fs = require('fs');
 
 export class Preferences {
-    serverAddr: string
-    isClient: boolean
-    isServer: boolean
-    constructor(serverAddr?: string, isClient?: boolean, isServer?: boolean){
-        if (typeof(serverAddr) != undefined){
-            this.serverAddr = serverAddr as string
+    hasClient: boolean
+    server: ServerConfig
+    constructor(hasClient?: boolean, server?: ServerConfig){
+        if (typeof(server) != undefined){
+            this.server = server as ServerConfig
         }
-        if (typeof(isClient) != undefined){
-            this.isClient = isClient as boolean
-        }
-        if (typeof(isServer) != undefined){
-            this.isServer = isServer as boolean
+        if (typeof(hasClient) != undefined){
+            this.hasClient = hasClient as boolean
         }
     }
     read = function(path: string) {
         let data = fs.readSync(path)
         let parsedData = JSON.parse(data)
-        this.serverAddr = parsedData["serverAddr"]
-        this.isClient = parsedData["isClient"]
-        this.isServer = parsedData["isServer"]
+        
+        this.server = parsedData["server"]
+        this.hasClient = parsedData["hasClient"]
     }
     save = function(path: string) {
         console.log(this);
@@ -30,18 +26,30 @@ export class Preferences {
     }
 }
 
+export class ServerConfig {
+    clientType: ServerType,
+    clientPort: number,
+    playerType: ServerType,
+    playerPort: number
+}
+
+export enum ServerType {
+    ws,
+    http,
+    https,
+    tcp
+}
+
 export function readPref(path: string): Preferences {
     let data = fs.readSync(path)
     let parsedData = JSON.parse(data)
-    return new Preferences(parsedData["serverAddr"], parsedData["isCleint"], parsedData["isServer"])
+    return parsedData as Preferences
 }
 
 var preferencePath = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Preferences' : process.env.HOME + "/.local/share")
 preferencePath += "/remote-music-preference.json"
-
 export let prefPath = preferencePath
     
-
 export function savePref(pref: Preferences, path: string){
     pref.save(path)
 }

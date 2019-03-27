@@ -24,7 +24,7 @@ app.on('ready', (launchParams) => {
     win = createWindow()
     if (requireSetup) {
         win.webContents.openDevTools()
-        let pref = new Preferences("localhost", true, true)
+        let pref = new Preferences(true, {})
         pref.save(prefPath)
     }
 })
