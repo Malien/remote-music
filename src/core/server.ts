@@ -1,7 +1,6 @@
 import { RemotePlayer, Client, Change, PlayerState } from "./components";
-import * as http from 'http';
+import { Preferences, ServerType, ServerConfig } from "./preferences";
 import * as WebSocket from 'ws';
-import { WSAEADDRINUSE } from "constants";
 
 export interface PlayerServer {
     players: Array<RemotePlayer>
@@ -22,12 +21,35 @@ export interface ClientServer {
 export class ServerInterconnect {
     client: ClientServer
     player: PlayerServer
-    constructor (client: ClientServer, player: PlayerServer){
+    private constructor (client: ClientServer, player: PlayerServer){
         this.client = client
         this.player = player
         this.client.registerHook(this)
         this.player.registerHook(this)
     }
+    static initWithServers(client: ClientServer, player: PlayerServer): ServerInterconnect {
+        return new ServerInterconnect(client, player)
+    }
+    static initWithConf(conf: ServerConfig): ServerInterconnect {
+        let client: ClientServer
+        let player: PlayerServer
+        switch (conf.clientType){
+            case ServerType.ws:
+                client = new WSCientServer(conf.clientPort)
+                break;
+            default:
+                throw new Error("invalid preferences object")
+        }
+        switch (conf.playerType){
+            case ServerType.ws:
+                player = new WSPlayerServer(conf.playerPort)
+                break;
+            default:
+                throw new Error("invalid preferences object")
+        }
+        return new ServerInterconnect(client, player)
+    }
+
     getPlayers(): Promise<RemotePlayer[]>{
         return this.player.getPlayers()
     }
@@ -68,6 +90,7 @@ export class WSCientServer implements ClientServer {
         })
     }
     private onMessage(ws:WebSocket, client:Client, message:WebSocket.Data){
+        //FIXME: on any message server crashes
         let strmsg = message.toString().split("[(),]")
         if (strmsg[0].trim() == "getPlayers"){
             this.hook.getPlayers().then((val) => {ws.send(val)})
@@ -85,7 +108,7 @@ export class WSPlayerServer implements PlayerServer {
     registerHook(hook: ServerInterconnect){
         this.hook = hook
     }
-    constructor(){
+    constructor(port: number){
         //TODO: Implement this
     }
 

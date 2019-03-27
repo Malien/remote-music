@@ -21,7 +21,7 @@ export class Client {
         return null
     }
     encode64(message: any): string{
-        return null
+        return "null"
     }
 }
 
