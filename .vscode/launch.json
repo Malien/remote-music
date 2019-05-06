@@ -5,15 +5,30 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "node",
+            "request": "launch",
+            "name": "Main Run",
+            "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+            "program": "${workspaceFolder}/main.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Main Build&Run",
+            "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+            "program": "${workspaceFolder}/main.js",
+            "preLaunchTask": "npm build"
+        },
+        {
             "type": "electron",
             "request": "launch",
-            "name": "Electron Run",
+            "name": "Renderer Run",
             "appDir": "${workspaceFolder}",
         },
         {
             "type": "electron",
             "request": "launch",
-            "name": "Electron Build&Run",
+            "name": "Renderer Build&Run",
             "appDir": "${workspaceFolder}",
             "preLaunchTask": "npm build"
         }

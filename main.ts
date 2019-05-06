@@ -1,11 +1,10 @@
 import { BrowserWindow, app } from 'electron'
 import { platform } from 'os'
-import * as fs from 'fs';
 
-import { Preferences, prefPath, ServerType, readPref } from "./src/core/preferences"
+import * as pref from "./src/core/preferences"
 import { ServerInterconnect } from './src/core/server';
 
-let requireSetup = !fs.existsSync(prefPath)
+let requireSetup = !pref.canBeMerged(pref.path)
 
 let win: BrowserWindow
 let servers: ServerInterconnect
@@ -23,22 +22,23 @@ function createWindow(): BrowserWindow{
 
 app.on('ready', (launchParams) => {
     win = createWindow()
-    console.log(prefPath)
-    let pref: Preferences
+    console.log(pref.path)
+    let preferences: pref.Preferences
     if (requireSetup) {
         win.webContents.openDevTools()
-        pref = new Preferences(false, {
-            clientType: ServerType.ws,
+        preferences = new pref.Preferences(false, {
+            clientType: pref.ServerType.ws,
             clientPort: 9090,
-            playerType: ServerType.ws,
+            playerType: pref.ServerType.ws,
             playerPort: 9091
         })
-        pref.save(prefPath)
+        preferences.save(pref.path)
     } else {
-        pref = readPref(prefPath);
+        preferences = pref.read(pref.path);
     }
-    if (typeof(pref.server) != 'undefined') {
-        servers = ServerInterconnect.initWithConf(pref.server)
+    console.log(preferences)
+    if (typeof(preferences.server) != 'undefined') {
+        servers = ServerInterconnect.initWithConf(preferences.server)
     }
 })
 

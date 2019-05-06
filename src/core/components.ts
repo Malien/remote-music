@@ -1,8 +1,15 @@
 let uuid = require('uuid/v1')
 
+export interface Comparartor<T>{
+    compare(o1:T, o2:T): number
+}
+
 export class RemotePlayer {
     id: string
     name: string
+    constructor(){
+        this.id = uuid()
+    }
 }
 
 export class Client {
@@ -25,10 +32,10 @@ export class Client {
 }
 
 export class Change {
-    scrub: number | undefined
-    qeuue: Queue | undefined
-    action: Action | undefined
-    constructor(scrub: number | undefined, queue: Queue | undefined, action: Action | undefined){
+    scrub?: number
+    qeuue?: Queue
+    action?: Action
+    constructor(scrub?: number, queue?: Queue, action?: Action){
         this.scrub = scrub
         this.qeuue = queue
         this.action = action

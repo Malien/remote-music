@@ -1,15 +1,15 @@
 import { RemotePlayer, Client, Change, PlayerState } from "./components";
-import { Preferences, ServerType, ServerConfig } from "./preferences";
+import { ServerType, ServerConfig } from "./preferences";
 import * as WebSocket from 'ws';
 
 export interface PlayerServer {
-    players: Array<RemotePlayer>
+    players: Map<string, RemotePlayer>
     hook: ServerInterconnect
     registerHook: (interconnect: ServerInterconnect) => void
 
-    getPlayers(): Promise<RemotePlayer[]>
-    getStats(id:string): Promise<PlayerState>
-    send(id: string, change: Change): Promise<void>
+    getPlayers: () => RemotePlayer[]
+    getStats: (id:string) => PlayerState
+    send: (id: string, change: Change) => void
 }
 
 export interface ClientServer {
@@ -35,7 +35,7 @@ export class ServerInterconnect {
         let player: PlayerServer
         switch (conf.clientType){
             case ServerType.ws:
-                client = new WSCientServer(conf.clientPort)
+                client = new WSClientServer(conf.clientPort)
                 break;
             default:
                 throw new Error("invalid preferences object")
@@ -50,13 +50,13 @@ export class ServerInterconnect {
         return new ServerInterconnect(client, player)
     }
 
-    getPlayers(): Promise<RemotePlayer[]>{
+    getPlayers(): RemotePlayer[]{
         return this.player.getPlayers()
     }
-    getStats(id:string): Promise<PlayerState>{
+    getStats(id:string): PlayerState{
         return this.player.getStats(id)
     }
-    send(id: string, change: Change): Promise<void>{
+    send(id: string, change: Change): void{
         return this.player.send(id, change)
     }
 }
@@ -69,58 +69,78 @@ export class WSClient extends Client {
     }
 }
 
-export class WSCientServer implements ClientServer {
+export class WSClientServer implements ClientServer {
     clients: WSClient[];
     hook: ServerInterconnect
-    private wsServer: WebSocket.Server
+    private server: WebSocket.Server
     constructor(port:number){
-        this.wsServer = new WebSocket.Server({
+        this.server = new WebSocket.Server({
             port: port
         })
-        this.wsServer.on('connection', this.onConnection)
+        this.server.on('connection', this.onConnection.bind(this))
     }
-    registerHook(hook: ServerInterconnect) {
-        this.hook = hook
-    }
-
     private onConnection(ws: WebSocket){
         ws.send("Hello")
-        ws.on('message', (data) => {
-            this.onMessage(ws, new WSClient(ws), data)
+        let clientServer = this
+        ws.on('message', function (this, data) {
+            clientServer.onMessage.call(clientServer, this, data)
+        })
+        ws.on('close', (code, reason) => {
+            console.log("[server.ts]: ", code, reason)
         })
     }
-    private onMessage(ws:WebSocket, client:Client, message:WebSocket.Data){
-        //FIXME: on any message server crashes
-        let strmsg = message.toString().split("[(),]")
-        if (strmsg[0].trim() == "getPlayers"){
-            this.hook.getPlayers().then((val) => {ws.send(val)})
+    onMessage(ws:WebSocket, message:string){
+        let strmsg = message.split(/[(),]/)
+        if (strmsg[0].trim() == "getPlayers") {
+            let players = this.hook.getPlayers()
+            ws.send(players)
         } else if (strmsg[0].trim() == "getStats") {
-            this.hook.getStats(strmsg[1].trim()).then((val) => {ws.send(JSON.stringify(val))})
-        } else if (strmsg[0].trim() == "send"){
+            let state = this.hook.getStats(strmsg[1].trim())
+            ws.send(JSON.stringify(state))
+        } else if (strmsg[0].trim() == "send") {
             this.hook.send(strmsg[1].trim(), JSON.parse(strmsg[2].trim()) as Change)
         }
+    }
+
+    registerHook(hook: ServerInterconnect) {
+        this.hook = hook
     }
 }
 
 export class WSPlayerServer implements PlayerServer {
-    players: Array<RemotePlayer>
+    players: Map<string, RemotePlayer>
     hook: ServerInterconnect
-    registerHook(hook: ServerInterconnect){
-        this.hook = hook
-    }
+    private server: WebSocket.Server
     constructor(port: number){
-        //TODO: Implement this
+        this.server = new WebSocket.Server({
+            port: port
+        })
+        this.server.on('connection', this.onConnection.bind(this))
+    }
+    private onConnection(ws:WebSocket){
+        let playerServer = this
+        let player = new RemotePlayer()
+        this.players[player.id] = player
+        ws.on('message', (data) => {
+            playerServer.onMessage.call(playerServer, this, player, data)
+        })
+    }
+    private onMessage(ws:WebSocket, player:RemotePlayer, data:string){
+        
     }
 
-    getPlayers(): Promise<RemotePlayer[]> {
+    getPlayers(): RemotePlayer[] {
         //TODO: Implement this
-        return new Promise(() => {})
+        return [new RemotePlayer(), new RemotePlayer()]
     }
-    getStats(id:string): Promise<PlayerState> {
+    getStats(id:string): PlayerState {
         //TODO: Implement this
-        return new Promise(() => {})
+        return new PlayerState()
     }
-    send(id: string, change: Change): Promise<void> {
-        return new Promise(() => {})
+    send(id: string, change: Change): void {
+        //TODO: You guessed, implement this
+    }
+    registerHook(hook: ServerInterconnect){
+        this.hook = hook
     }
 }
