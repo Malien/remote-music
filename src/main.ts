@@ -1,8 +1,9 @@
 import { BrowserWindow, app } from 'electron'
 import { platform } from 'os'
 
-import * as pref from "./src/core/preferences"
-import { ServerInterconnect } from './src/core/server';
+import * as pref from "./core/preferences"
+import { ServerInterconnect } from './core/server/server';
+import { interconnectFrom } from "./core/server/util";
 
 let requireSetup = !pref.canBeMerged(pref.path)
 
@@ -27,10 +28,14 @@ app.on('ready', (launchParams) => {
     if (requireSetup) {
         win.webContents.openDevTools()
         preferences = new pref.Preferences(false, {
-            clientType: pref.ServerType.ws,
-            clientPort: 9090,
-            playerType: pref.ServerType.ws,
-            playerPort: 9091
+            client: {
+                type: pref.ServerType.ws,
+                port: 9090
+            },
+            player: {
+                type: pref.ServerType.ws,
+                port: 9091
+            }
         })
         preferences.save(pref.path)
     } else {
@@ -38,7 +43,7 @@ app.on('ready', (launchParams) => {
     }
     console.log(preferences)
     if (typeof(preferences.server) != 'undefined') {
-        servers = ServerInterconnect.initWithConf(preferences.server)
+        servers = interconnectFrom(preferences.server)
     }
 })
 

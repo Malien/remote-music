@@ -5,10 +5,10 @@ let currentVersion = require('./../../package.json').version as string
 export class Preferences {
     version: string
     hasClient: boolean
-    server: ServerConfig
-    constructor(hasClient?: boolean, server?: ServerConfig){
+    server: ServerTuple
+    constructor(hasClient?: boolean, server?: ServerTuple){
         if (typeof(server) != 'undefined'){
-            this.server = server as ServerConfig
+            this.server = server as ServerTuple
         }
         if (typeof(hasClient) != 'undefined'){
             this.hasClient = hasClient as boolean
@@ -28,13 +28,15 @@ export class Preferences {
     }
 }
 
+export class ServerTuple {
+    client: ServerConfig
+    player: ServerConfig
+}
+
 export class ServerConfig {
-    clientType: ServerType
-    clientPort: number
-    clientPassword?: string
-    playerType: ServerType
-    playerPort: number
-    playerPassword?: string
+    type: ServerType
+    port: number
+    password?: string
 }
 
 export enum ServerType {
@@ -64,16 +66,30 @@ export function merge(data:any): Preferences{
     if (versionComparator.compare(version, currentVersion) == 0) {
         return data as Preferences
     }
-    if (versionComparator.compare(version, "1.0.0") == 0){
-        return data as Preferences
-    } 
+    if (versionComparator.compare(version, "1.0.1") <= 0){
+        return new Preferences(data.hasClient, {
+            client:{
+                type: data.server.clientType,
+                port: data.server.clientPort
+            },
+            player: {
+                type: data.server.playerType,
+                port: data.server.playerPort
+            }
+        })
+    }
     throw new Error("Can't merge preferences")
 }
 
 export function read(path: string): Preferences {
     let data = fs.readFileSync(path).toString()
     let parsedData = JSON.parse(data)
-    return merge(parsedData)
+    if (parsedData.version != currentVersion) {
+        let merged = merge(parsedData)
+        merged.save(path)
+        return merged
+    }
+    return parsedData as Preferences
 }
 
 export function canBeMerged(path: string): boolean {

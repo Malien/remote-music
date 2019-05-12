@@ -9,14 +9,14 @@
             "request": "launch",
             "name": "Main Run",
             "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
-            "program": "${workspaceFolder}/main.js"
+            "program": "${workspaceFolder}/dist/main.js"
         },
         {
             "type": "node",
             "request": "launch",
             "name": "Main Build&Run",
             "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
-            "program": "${workspaceFolder}/main.js",
+            "program": "${workspaceFolder}/dist/main.js",
             "preLaunchTask": "npm build"
         },
         {

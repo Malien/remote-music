@@ -64,9 +64,7 @@ typings/
 out
 
 # compiled js files
-main.js
-src/core/*.js
-*.js.map
+dist
 
 # System files
 .DS_Store

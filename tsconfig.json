@@ -1,5 +1,4 @@
 {
-    "compileOnSave": true,
     "compilerOptions": {
         "removeComments": true,
         "strictNullChecks": true,
@@ -7,6 +6,7 @@
         "target": "es5",
         "module": "es2015",
         "sourceMap": true,
+        "outDir": "dist",
         "typeRoots": [
             "node_modules/@types"
         ],
@@ -16,6 +16,6 @@
         ]
     },
     "files": [
-        "main.ts"
+        "src/main.ts"
     ]
 }
