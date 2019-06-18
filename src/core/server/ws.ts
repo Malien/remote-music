@@ -43,7 +43,7 @@ export class WSClientServer implements ClientServer {
         })
     }
     onMessage(ws:WebSocket, data:WebSocket.Data){
-        let message = data.toString();
+        let message = data.toString().trim();
         let strmsg = message.split(/[(),]/)
         if (strmsg[0].trim() == "getPlayers") {
             let players = this.hook.getPlayers()
