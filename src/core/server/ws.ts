@@ -42,7 +42,8 @@ export class WSClientServer implements ClientServer {
             console.log("[server.ts]: ", code, reason)
         })
     }
-    onMessage(ws:WebSocket, message:string){
+    onMessage(ws:WebSocket, data:WebSocket.Data){
+        let message = data.toString();
         let strmsg = message.split(/[(),]/)
         if (strmsg[0].trim() == "getPlayers") {
             let players = this.hook.getPlayers()
