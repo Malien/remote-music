@@ -2,8 +2,9 @@ import { BrowserWindow, app } from 'electron'
 import { platform } from 'os'
 
 import * as pref from "./core/preferences"
-import { ServerInterconnect } from './core/server/server';
-import { interconnectFrom } from "./core/server/util";
+import { ServerInterconnect } from './core/server/server'
+import { interconnectFrom } from "./core/server/util"
+import { Updater } from "./core/client/updater"
 
 let requireSetup = !pref.canBeMerged(pref.path)
 
@@ -14,12 +15,15 @@ function createWindow(): BrowserWindow{
     win = new BrowserWindow({
         width: 600,
         height: 400,
-        frame: true
+        frame: true,
     })
 
     win.loadFile("src/app/index.html")
+    win.webContents.openDevTools()
     return win
 }
+
+let upd;
 
 app.on('ready', (launchParams) => {
     win = createWindow()
@@ -45,6 +49,11 @@ app.on('ready', (launchParams) => {
     if (typeof(preferences.server) != 'undefined') {
         servers = interconnectFrom(preferences.server)
     }
+    upd = new Updater({
+        address: "ws://localhost:9090",
+        id: "test",
+        type: pref.ServerType.ws
+    })
 })
 
 app.on('window-all-closed', () =>{
