@@ -4,7 +4,7 @@ import { platform } from 'os'
 import * as pref from "./core/preferences"
 import { ServerInterconnect } from './core/server/server'
 import { interconnectFrom } from "./core/server/util"
-import { Updater } from "./core/client/updater"
+import { Listener } from "./core/client/listener"
 
 let requireSetup = !pref.canBeMerged(pref.path)
 
@@ -16,17 +16,18 @@ function createWindow(): BrowserWindow{
         width: 600,
         height: 400,
         frame: true,
+        webPreferences: {
+            nodeIntegration: true
+        }
     })
-
     win.loadFile("src/app/index.html")
     win.webContents.openDevTools()
     return win
 }
 
-let upd;
+let upd
 
 app.on('ready', (launchParams) => {
-    win = createWindow()
     console.log(pref.path)
     let preferences: pref.Preferences
     if (requireSetup) {
@@ -49,11 +50,13 @@ app.on('ready', (launchParams) => {
     if (typeof(preferences.server) != 'undefined') {
         servers = interconnectFrom(preferences.server)
     }
-    upd = new Updater({
-        address: "ws://localhost:9090",
-        id: "test",
-        type: pref.ServerType.ws
-    })
+    setTimeout(() => {
+        upd = new Listener({
+            address: "ws://localhost:9090",
+            type: pref.ServerType.ws,
+            id: "testing-id"
+        })
+    }, 1)
 })
 
 app.on('window-all-closed', () =>{
