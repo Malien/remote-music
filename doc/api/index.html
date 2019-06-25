@@ -1,0 +1,413 @@
+<html>
+    <head>
+        <title>Remote-music API Specification</title>
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <h1>Remote-music API specification</h1>
+        <div class="content">
+            <h2>1. Communication overview</h2>
+            <p>Remote-music service needs to be connected to server, to be able to control music playback remotely. Server has two endpoints: client server (CS) and player server (PS). To access information about remote players connected to service — access CS It provides with information about connected players, their current song, song queue and playback timestamp. To report information to the server, player would use a PS.</p>
+            <img style="width: 60%; margin: 0 20%" src="overview.svg" onerror="this.src='overview.png'">
+            <p>Communication can be done through number of different ways. For client it is web socket (ws), TCP, or RESTful HTTP api. For players it is ws or TCP. Note, the type of communication depends on server configuration and can differ from each other (eg. client is serving only ws requests while players communicate to the server through tcp).</p>
+            <p>NOTE: Only the web socket is currently being worked on.</p>
+        </div>
+        <div class="content">
+            <h2>2. Client WS API specification</h2>
+            <p>All messages sent through ws should be in valid JSON format and be structured in such way:</p>
+            <table>
+                <tr>
+                    <th>Field Name</th>
+                    <th>Possible values</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>type</th>
+                    <td>string</th>
+                    <td>Request type</th>
+                </tr>
+                <tr>
+                    <td>payload?</th>
+                    <td>Any</th>
+                    <td>The additional information to process request</th>
+                </tr>
+            </table>
+            <p>Server responses are formatted as such:</p>
+            <table>
+                <tr>
+                    <th>Field Name</th>
+                    <th>Possible values</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>type</th>
+                    <td>string</th>
+                    <td>Type of a message</th>
+                </tr>
+                <tr>
+                    <td>payload</th>
+                    <td>Object</th>
+                    <td>The response payload</th>
+                </tr>
+            </table>
+            <p>There are following requests available:</p>
+            <ul>
+                <li>
+                    <h3>players</h3>
+                    <p>returns the array of currently connected players with theirs id’s</p>
+                    <div class="example-box">
+                        <h4>Client request</h4>
+                        <p>{<br>    "type":"players"<br>}</p>
+                    </div>
+                    <div class="example-box">
+                        <h4>Server response</h4>
+                        <p>{<br>    "type":"players",<br>    "payload": [<br>        "id-of-a-player-1",<br>        "id-of-a-player-2",<br>        …<br>    ]<br>}</p>
+                    </div>
+                </li>
+                <li>
+                    <h3>playerStatus</h3>
+                    <p>returns the currents status of a particular player</p>
+                    <p>See also: <a href="#def-client-status">Player status payload formatting</a></p>
+                    <div class="example-box">
+                        <h4>Client request</h4>
+                        <p>{<br>    "type":"playerStatus",<br>    "payload": {<br>        "id":"id-of-a-player",<br>        "queueLimit":10 <i>// Optional: the max amount of songs in queue. Defaults to 0</i><br>    }<br>}</p>
+                    </div>
+                    <div class="example-box">
+                        <h4>Server response</h4>
+                        <p>{<br>    "type":"playerStatus",<br>    "payload": {<br>        "id":"player-id"<br>        "current": {<br>            "title":"Doom Days",<br>            "artist":"Bastille",<br>            "album":"Doom Days",<br>            "length":140, <i>// length of song in seconds</i><br>            "artwork":"http://url-to-artwork" <i>//Optional</i><br>            "metadata":{<i>/**additional metadata**/</i>>} <i>//Optional</i><br>        },<br>        "progress": 130, <i>// current timestamp in seconds</i><br>        "playing": true, <i>// current play state</i><br>        "queue": [<br>            {<i>/** Song **/</i>},<br>            …<br>        ] <i>// the list of queued up song</i><br>    }<br>}</p>
+                    </div>
+                </li>
+                <li>
+                    <h3>subscribe</h3>
+                    <p>
+                        First, subscription must be requested to a particular player 
+                        by their id, after that server will notify about change that 
+                        occurred in the player status.
+                    </p>
+                    <p>See also: <a href="#def-client-status">Player status payload formatting</a></p>
+                    <div class="example-box">
+                        <h4>Client request</h4>
+                        <p>{<br>    "type":"subscribe",<br>    "payload": {<br>        "id":"id-of-a-player",<br>        "queueLimit":10 <i>// Optional: the max amount of songs in queue. Defaults to 0</i><br>    }<br>}</p>
+                    </div>
+                    <div class="example-box">
+                        <h4>Server responses</h4>
+                        <p>{<br>    "type":"subscription",<br>    "payload":{<br>        "id":"player-id",<br>        "current": {<br>            "title":"Doom Days",<br>            "artist":"Bastille",<br>            "album":"Doom Days",<br>            "length":140, <i>// length of song in seconds</i><br>            "artwork":"http://url-to-artwork" <i>//Optional</i><br>            "metadata":{<i>/**additional metadata**/</i>} <i>//Optional</i><br>        },<br>        "progress": 130, <i>// current timestamp in seconds</i><br>        "playing": true, <i>// current play state</i><br>        "queue": [<br>            {<i>/** Song **/</i>},<br>            …<br>        ] <i>// the list of queued up song</i><br>    }<br>}</p>
+                    </div>
+                </li>
+                <li>
+                    <h3>unsubscribe</h3>
+                    <p>Removes subscription from player specified by its id</p>
+                    <div class="example-box">
+                        <h4>Client request</h4>
+                        <p>{<br>    "type":"unsubscribe",<br>    "payload":"player-id"<br>}</p>
+                    </div>
+                </li>
+                <li>
+                    <h3>subscriptionStatus</h3>
+                    <p>Returns the status of a subscription</p>
+                    <div class="example-box">
+                        <h4>Client request</h4>
+                        <p>{<br>    "type":"subscriptionStatus",<br>    "payload":"player-id"<br>}</p>
+                    </div>
+                    <div class="example-box">
+                        <h4>Server response</h4>
+                        <p>{<br>    "type":"subscriptionStatus",<br>    "payload":{<br>        "id":"player-id",<br>        "subscribed":false <i>//status of the subscription</i><br>    }<br>}</p>
+                    </div>
+                </li>
+                <li>
+                    <h3>subscriptions</h3>
+                    <p>Return all of the statuses for the players connected to server</p>
+                    <div class="example-box">
+                        <h4>Client request</h4>
+                        <p>{<br>    "type":"subscriptions"<br>}</p>
+                    </div>
+                    <div class="example-box">
+                        <h4>Server response</h4>
+                        <p>{<br>    "type":"subscriptions",<br>    "payload":{<br>        "player-id-1":false,<br>        "player-id-2":true,<br>        …<br>    }<br>}</p>
+                    </div>
+                </li>
+                <li>
+                    <h3>statusChange</h3>
+                    <p>Set the status change of player specified by id</p>
+                    <p>See also: <a href="#def-client-change">Player change payload formatting</a></p>
+                    <div class="example-box">
+                        <h4>Client request</h4>
+                        <p>{<br>    "type":"statusChange",<br>    "payload":{<br>        "id":"player-id",<br>        "current": {<br>            "title":"Doom Days",<br>            "artist":"Bastille",<br>            "album":"Doom Days",<br>            "length":140, // length of song in seconds<br>            "artwork":"http://url-to-artwork" //Optional<br>            "metadata":{/**additional metadata**/} //Optional<br>        },<br>        "progress": 130, // current timestamp in seconds<br>        "playing": true, // current play state<br>        "queue": [<br>            {/** Song **/},<br>            …<br>        ] // the list of queued up song<br>    }<br>}</p>
+                    </div>
+                </li>
+                <li>
+                    <h3>queueUp</h3>
+                    <p>Add songs to the queue</p>
+                    <div class="example-box">
+                        <h4>Client request</h4>
+                        <p>{<br>    "type":"queueUp",<br>    "payload":{<br>        "id":"player-id",<br>        "position":0, <i>// position in queue where to insert new song</i><br>        "songs":[<br>            {<i>/**Song**/</i>},<br>            …<br>        ]<br>    }<br>}</p>
+                    </div>
+                </li>
+            </ul>
+        </div>
+        <div class="content">
+            <h2>3. Player WS API specification</h2>
+            <p>Player API is simular to client one in that requests and responses have same JSON formatting.</p>
+            <p>For clinet requests:</p>
+            <table>
+                <tr>
+                    <th>Field Name</th>
+                    <th>Possible values</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>type</th>
+                    <td>string</th>
+                    <td>Request type</th>
+                </tr>
+                <tr>
+                    <td>payload?</th>
+                    <td>Any</th>
+                    <td>The additional information to process request</th>
+                </tr>
+            </table>
+            <p>And for server responses:</p>
+            <table>
+                <tr>
+                    <th>Field Name</th>
+                    <th>Possible values</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>type</th>
+                    <td>string</th>
+                    <td>Type of a message</th>
+                </tr>
+                <tr>
+                    <td>payload</th>
+                    <td>Object</th>
+                    <td>The response payload</th>
+                </tr>
+            </table>
+            <p>
+                Yet there is still a difference. Players must provide heartbeat messages 
+                and respond to ping requests with their current status. Heartbeat messages should be sent 
+                every N seconds where N is specified in the initial player registration server response. 
+            </p>
+            <p>See also: <a href="#def-player-status">Player status formatting for player requests</a></p>
+            <div class="example-box">
+                <h4>Server ping request</h4>
+                <p>{<br>    "type":"ping"<br>}</p>
+            </div>
+            <div class="example-box">
+                <h4>Client pong response</h4>
+                <p>{<br>    "type":"pong",<br>    "payload":{<br>        "current": {<br>            "title":"Doom Days",<br>            "artist":"Bastille",<br>            "album":"Doom Days",<br>            "length":140, // length of song in seconds<br>            "artwork":"http://url-to-artwork" //Optional<br>            "metadata":{/**additional metadata**/} //Optional<br>        },<br>        "progress": 130, // current timestamp in seconds<br>        "playing": true, // current play state<br>        "queue": [<br>            {/** Song **/},<br>            …<br>        ] // the list of queued up songs<br>    }<br>}</p>
+            </div>
+            <div class="example-box">
+                <h4>Client heartbeat message</h4>
+                <p>{<br>    "type":"heartbeat",<br>    "payload":{<br>        "current": {<br>            "title":"Doom Days",<br>            "artist":"Bastille",<br>            "album":"Doom Days",<br>            "length":140, // length of song in seconds<br>            "artwork":"http://url-to-artwork" //Optional<br>            "metadata":{/**additional metadata**/} //Optional<br>        },<br>        "progress": 130, // current timestamp in seconds<br>        "playing": true, // current play state<br>        "queue": [<br>            {/** Song **/},<br>            …<br>        ] // the list of queued up songs<br>    }<br>}</p>
+            </div>
+            <h3>Player registration</h3>
+            <p>
+                Another difference to client API is that players must first send registration request to access any of the
+                player APIs. Server response will contain the heartbeat time interval and assaigned unique player ID.
+            </p>
+            <div class="example-box">
+                <h4>Registration request</h4>
+                <p>{<br>    "type":"register",<br>    "payload":"player-name" <i>//Visible name of a player</i><br>}</p>
+            </div>
+            <div class="example-box">
+                <h4>Registration response</h4>
+                <p>{<br>    "type":"register",<br>    "payload": {<br>        "id":"newly-assigned-player-id",<br>        "interval":30 <i>//The interval at which heartbeat messages should be sent</i><br>   }<br>}</p>
+            </div>
+            <p>
+                If heartbeat or pong (ping response) messages are not recieved, 
+                player will be unregistered, and the cooresponding message will be transmitted:
+            </p>
+            <div class="example-box">
+                <h4>Unregistartion event</h4>
+                <p>{<br>    "type":"unregister"<br>}</p>
+            </div>
+            <h3>Responding to remote change</h3>
+            <p>
+                Additionally player must take into consideration server "statusChange" calls. 
+                When such message is recieved, player should change internal state according to message,
+                and respond with its status. Be aware that statusChange messages could be partial 
+                (eg. when only play state should change every other field could be ommited)
+            </p>
+            <p>
+                If player initiated change (eg. user on the local machine changed song manually),
+                player should send "statusChange" message to keep server and clients in sync.
+                Additionally, on music skip or when playback continuue to the next song, 
+                "statusChange" message should be sent immidiately after.
+            </p>
+            <p>See also: <a href="#def-player-change">Player change formatting for player requests</a></p>
+            <div class="example-box">
+                <h4>Server "statusChange" event</h4>
+                <p>{<br>    "type":"statusChange",<br>    "payload":{<br>        "current": {<br>            "title":"Doom Days",<br>            "artist":"Bastille",<br>            "album":"Doom Days",<br>            "length":140, // length of song in seconds<br>            "artwork":"http://url-to-artwork" //Optional<br>            "metadata":{/**additional metadata**/} //Optional<br>        },<br>        "progress": 130, // current timestamp in seconds<br>        "playing": true, // current play state<br>        "queue": [<br>            {/** Song **/},<br>            …<br>        ] // the list of queued up songs<br>    }<br>}</p>
+            </div>
+            <div class="example-box">
+                <h4>Client response</h4>
+                <p>{<br>    "type":"statusChange",<br>    "payload":{<br>        "current": {<br>            "title":"Doom Days",<br>            "artist":"Bastille",<br>            "album":"Doom Days",<br>            "length":140, // length of song in seconds<br>            "artwork":"http://url-to-artwork" //Optional<br>            "metadata":{/**additional metadata**/} //Optional<br>        },<br>        "progress": 130, // current timestamp in seconds<br>        "playing": true, // current play state<br>        "queue": [<br>            {/** Song **/},<br>            …<br>        ] // the list of queued up songs<br>    }<br>}</p>
+            </div>
+        </div>
+        <div class="content">
+            <h2>Object reference</h2>
+            <h3 id="def-Song">Song</h3>
+            <table>
+                <tr>
+                    <th>Field Name</th>
+                    <th>Possible values</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>title</td>
+                    <td>string</td>
+                    <td>Track title</td>
+                </tr>
+                <tr>
+                    <td>artist</td>
+                    <td>string</td>
+                    <td>Track artist</td>
+                </tr>
+                <tr>
+                    <td>album</td>
+                    <td>string</td>
+                    <td>Track album</td>
+                </tr>
+                <tr>
+                    <td>length</td>
+                    <td>number</td>
+                    <td>Length of a track in seconds</td>
+                </tr>
+                <tr>
+                    <td>artwork</td>
+                    <td>string? (URL)</td>
+                    <td>URL to the album artwork</td>
+                </tr>
+                <tr>
+                    <td>metadata</td>
+                    <td>Object?</td>
+                    <td>Map of the additional metadata</td>
+                </tr>
+            </table>
+            <h3 id="def-client-status">Player status for client requests</h3>
+            <table>
+                <tr>
+                    <th>Field Name</th>
+                    <th>Possible values</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>id</td>
+                    <td>string</td>
+                    <td>UUID of the player</td>
+                </tr>
+                <tr>
+                    <td>current</td>
+                    <td><a href="#def-Song">Song?</a></td>
+                    <td>Currently playing song</td>
+                </tr>
+                <tr>
+                    <td>progress</td>
+                    <td>number</td>
+                    <td>Current song progress in seconds</td>
+                </tr>
+                <tr>
+                    <td>playing</td>
+                    <td>bool</td>
+                    <td>Whether or not song is playing right now</td>
+                </tr>
+                <tr>
+                    <td>queue</td>
+                    <td><a href="#def-Song">Song[]</a></td>
+                    <td>List of songs in queue</td>
+                </tr>
+            </table>
+            <h3 id="def-client-change">Player change for client requests</h3>
+            <table>
+                <tr>
+                    <th>Field Name</th>
+                    <th>Possible values</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>id</td>
+                    <td>string</td>
+                    <td>UUID of the player</td>
+                </tr>
+                <tr>
+                    <td>current?</td>
+                    <td><a href="#def-Song">Song?</a></td>
+                    <td>Currently playing song</td>
+                </tr>
+                <tr>
+                    <td>progress?</td>
+                    <td>number</td>
+                    <td>Current song progress in seconds</td>
+                </tr>
+                <tr>
+                    <td>playing?</td>
+                    <td>bool</td>
+                    <td>Whether or not song is playing right now</td>
+                </tr>
+                <tr>
+                    <td>queue?</td>
+                    <td><a href="#def-Song">Song[]</a></td>
+                    <td>List of songs in queue</td>
+                </tr>
+            </table>
+            <h3 id="def-player-status">Player status for player requests</h3>
+            <table>
+                <tr>
+                    <th>Field Name</th>
+                    <th>Possible values</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>current</td>
+                    <td><a href="#def-Song">Song?</a></td>
+                    <td>Currently playing song</td>
+                </tr>
+                <tr>
+                    <td>progress</td>
+                    <td>number</td>
+                    <td>Current song progress in seconds</td>
+                </tr>
+                <tr>
+                    <td>playing</td>
+                    <td>bool</td>
+                    <td>Whether or not song is playing right now</td>
+                </tr>
+                <tr>
+                    <td>queue</td>
+                    <td><a href="#def-Song">Song[]</a></td>
+                    <td>List of songs in queue</td>
+                </tr>
+            </table>
+            <h3 id="def-player-change">Player change for player requests</h3>
+            <table>
+                <tr>
+                    <th>Field Name</th>
+                    <th>Possible values</th>
+                    <th>Description</th>
+                </tr>
+                <tr>
+                    <td>current?</td>
+                    <td><a href="#def-Song">Song?</a></td>
+                    <td>Currently playing song</td>
+                </tr>
+                <tr>
+                    <td>progress?</td>
+                    <td>number</td>
+                    <td>Current song progress in seconds</td>
+                </tr>
+                <tr>
+                    <td>playing?</td>
+                    <td>bool</td>
+                    <td>Whether or not song is playing right now</td>
+                </tr>
+                <tr>
+                    <td>queue?</td>
+                    <td><a href="#def-Song">Song[]</a></td>
+                    <td>List of songs in queue</td>
+                </tr>
+            </table>
+        </div>
+    </body>
+</html>

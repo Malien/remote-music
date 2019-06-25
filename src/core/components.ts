@@ -31,29 +31,20 @@ export class Client {
     }
 }
 
-export class Change {
-    scrub?: number
-    qeuue?: Queue
+export interface Change {
+    progress?: number
+    qeuue?: Song[]
+    current?: Song
     action?: Action
-    constructor(scrub?: number, queue?: Queue, action?: Action){
-        this.scrub = scrub
-        this.qeuue = queue
-        this.action = action
-    }
 }
 
-export class Queue {
-    songs: Song[]
-    constructor(songs: Song[]){
-        this.songs = songs
-    }
-}
-
-export class Song {
-    songURL: URL | string
-    constructor(songURL: URL | string){
-        this.songURL = songURL
-    }
+export interface Song {
+    title: string
+    artist: string
+    album: string
+    length: Number
+    artwork?: URL | string
+    metadata?: any
 }
 
 export enum Action {
