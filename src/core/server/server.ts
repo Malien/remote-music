@@ -1,38 +1,105 @@
-import { RemotePlayer, Client, Change, PlayerState } from "../components";
+import { Song, PlayerStatus, PlayerStatusChange } from "../components"
+import { EventEmitter } from "events";
 
-export interface PlayerServer {
-    players: Map<string, RemotePlayer>
-    hook: ServerInterconnect
-    registerHook: (interconnect: ServerInterconnect) => void
+type Sender = (msg: any)=>void
+type CSender = (msg: any, callback: (...args: any[])=>any)=>void
+type IDSetter = (id: string)=>void
 
-    getPlayers: () => RemotePlayer[]
-    getStats: (id:string) => PlayerState
-    send: (id: string, change: Change) => void
+export declare abstract class PlayerServerAdapter extends EventEmitter {
+    on(event: "pong", listener: (id: string, status: PlayerStatus)=>void):this
+    on(event: "heartbeat", listener: (id: string, status: PlayerStatus)=>void):this
+    on(event: "register", listener: (name: string, connection: Sender | CSender, idSetter: IDSetter)=>void):this
+    on(event: "unregister", listener: (id: string)=>void):this
+    on(event: "statusChange", listener: (id: string, statusChange: PlayerStatusChange)=>void):this
+    on(event: string | symbol, listener: (...args: any[])=>void):this
+    send(id: string, message: any):void
 }
 
-export interface ClientServer {
-    clients: Array<Client>
-    hook: ServerInterconnect
-    registerHook: (interconnect: ServerInterconnect) => void
+export declare abstract class ClientServerAdapter extends EventEmitter {
+    on(event: "players", listener: (sender: Sender)=>void):this
+    on(event: "playerStatus", listener: (id: string, sender: Sender)=>void):this
+    on(event: "statusChange", listener: (id: string, statusChange: PlayerStatusChange)=>void):this
+    on(event: "queueUp", listener: (id: string, position: number, queue: Song[])=>void):this
+    on(event: string | symbol, listener: (...args: any[])=>void):this
+    
+    off(event: "players", listener: (sender: Sender)=>void):this
+    off(event: "playerStatus", listener: (id: string, sender: Sender)=>void):this
+    off(event: "statusChange", listener: (id: string, statusChange: PlayerStatusChange)=>void):this
+    off(event: "queueUp", listener: (id: string, position: number, queue: Song[])=>void):this
+    off(event: string | symbol, listener: (...args: any[])=>void):this
+    
+    addListener(event: "players", listener: (sender: Sender)=>void):this
+    addListener(event: "playerStatus", listener: (id: string, sender: Sender)=>void):this
+    addListener(event: "statusChange", listener: (id: string, statusChange: PlayerStatusChange)=>void):this
+    addListener(event: "queueUp", listener: (id: string, position: number, queue: Song[])=>void):this
+    addListener(event: string | symbol, listener: (...args: any[])=>void):this
+    
+    removeListener(event: "players", listener: (sender: Sender)=>void):this
+    removeListener(event: "playerStatus", listener: (id: string, sender: Sender)=>void):this
+    removeListener(event: "statusChange", listener: (id: string, statusChange: PlayerStatusChange)=>void):this
+    removeListener(event: "queueUp", listener: (id: string, position: number, queue: Song[])=>void):this
+    removeListener(event: string | symbol, listener: (...args: any[])=>void):this
+
+    emit(event: "players", sender: Sender):boolean
+    emit(event: "playerStatus", id: string, sender: Sender):boolean
+    emit(event: "statusChange", id: string, statusChange: PlayerStatusChange):boolean
+    emit(event: "queueUp", id: string, position: number, queue: Song):boolean
+    emit(event: string | symbol, ...args: any):boolean
 }
 
-export class ServerInterconnect {
-    client: ClientServer
-    player: PlayerServer
-    constructor (client: ClientServer, player: PlayerServer){
-        this.client = client
-        this.player = player
-        this.client.registerHook(this)
-        this.player.registerHook(this)
-    }
+export declare abstract class StreamingClientServerAdapter extends ClientServerAdapter {
+    on(event: "players", listener: (sender: Sender)=>void):this
+    on(event: "playerStatus", listener: (id: string, sender: Sender)=>void):this
+    on(event: "statusChange", listener: (id: string, statusChange: PlayerStatusChange)=>void):this
+    on(event: "queueUp", listener: (id: string, position: number, queue: Song[])=>void):this
+    on(event: "subscribe", listener: (id: string, sender: Sender | CSender, queueLimit?: number)=>void):this
+    on(event: "unsubscribe", listener: (id: string, sender: Sender | CSender)=>void):this
+    on(event: "subscriptionStatus", listener: (sender: Sender | CSender)=>void):this
+    on(event: "subscriptions", listener: (sender: Sender | CSender)=>void):this
+    on(event: string | symbol, listener: (...args: any[])=>void):this
+    
+    off(event: "players", listener: (sender: Sender)=>void):this
+    off(event: "playerStatus", listener: (id: string, sender: Sender)=>void):this
+    off(event: "statusChange", listener: (id: string, statusChange: PlayerStatusChange)=>void):this
+    off(event: "queueUp", listener: (id: string, position: number, queue: Song[])=>void):this
+    off(event: "subscribe", listener: (id: string, sender: Sender | CSender, queueLimit?: number)=>void):this
+    off(event: "unsubscribe", listener: (id: string, sender: Sender | CSender)=>void):this
+    off(event: "subscriptionStatus", listener: (sender: Sender | CSender)=>void):this
+    off(event: "subscriptions", listener: (sender: Sender | CSender)=>void):this
+    off(event: string | symbol, listener: (...args: any[])=>void):this
 
-    getPlayers(): RemotePlayer[]{
-        return this.player.getPlayers()
-    }
-    getStats(id:string): PlayerState{
-        return this.player.getStats(id)
-    }
-    send(id: string, change: Change): void{
-        return this.player.send(id, change)
-    } 
+    addListener(event: "players", listener: (sender: Sender)=>void):this
+    addListener(event: "playerStatus", listener: (id: string, sender: Sender)=>void):this
+    addListener(event: "statusChange", listener: (id: string, statusChange: PlayerStatusChange)=>void):this
+    addListener(event: "queueUp", listener: (id: string, position: number, queue: Song[])=>void):this
+    addListener(event: "subscribe", listener: (id: string, sender: Sender | CSender, queueLimit?: number)=>void):this
+    addListener(event: "unsubscribe", listener: (id: string, sender: Sender | CSender)=>void):this
+    addListener(event: "subscriptionStatus", listener: (sender: Sender | CSender)=>void):this
+    addListener(event: "subscriptions", listener: (sender: Sender | CSender)=>void):this
+    addListener(event: string | symbol, listener: (...args: any[])=>void):this
+    
+    removeListener(event: "players", listener: (sender: Sender)=>void):this
+    removeListener(event: "playerStatus", listener: (id: string, sender: Sender)=>void):this
+    removeListener(event: "statusChange", listener: (id: string, statusChange: PlayerStatusChange)=>void):this
+    removeListener(event: "queueUp", listener: (id: string, position: number, queue: Song[])=>void):this
+    removeListener(event: "subscribe", listener: (id: string, sender: Sender | CSender, queueLimit?: number)=>void):this
+    removeListener(event: "unsubscribe", listener: (id: string, sender: Sender | CSender)=>void):this
+    removeListener(event: "subscriptionStatus", listener: (sender: Sender | CSender)=>void):this
+    removeListener(event: "subscriptions", listener: (sender: Sender | CSender)=>void):this
+    removeListener(event: string | symbol, listener: (...args: any[])=>void):this
+
+    emit(event: "players", sender: Sender):boolean
+    emit(event: "playerStatus", id: string, sender: Sender):boolean
+    emit(event: "statusChange", id: string, statusChange: PlayerStatusChange):boolean
+    emit(event: "queueUp", id: string, position: number, queue: Song):boolean
+    emit(event: "subscribe", id: string, sender: Sender | CSender, queueLimit?: number):boolean
+    emit(event: "unsubscribe", id: string, sender: Sender | CSender):boolean
+    emit(event: "subscriptionStatus", sender: Sender | CSender):boolean
+    emit(event: "subscriptions", sender: Sender | CSender):boolean
+    emit(event: string | symbol, ...args: any):boolean
 }
+
+export class PlayerServer {}
+export class ClientServer {}
+
+export class StreamingClientServer extends ClientServer {}

@@ -1,10 +1,13 @@
-import { ClientServer, PlayerServer, ServerInterconnect } from './server'
+import { ClientServer, PlayerServer } from './server'
 import { ServerTuple, ServerType } from '../preferences'
 import { WSClientServer, WSPlayerServer } from './ws'
 
-export function interconnectFrom(conf: ServerTuple): ServerInterconnect {
+interface ServerPair {client: ClientServer, player: PlayerServer}
+
+export function interconnectFrom(conf: ServerTuple): ServerPair {
     let client: ClientServer
     let player: PlayerServer
+    //TODO: construct servers properly
     switch (conf.client.type){
         case ServerType.ws:
             client = new WSClientServer(conf.client.port)
@@ -19,5 +22,5 @@ export function interconnectFrom(conf: ServerTuple): ServerInterconnect {
         default:
             throw new Error("invalid preferences object")
     }
-    return new ServerInterconnect(client, player)
+    return { client, player }
 }

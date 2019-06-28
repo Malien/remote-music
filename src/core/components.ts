@@ -31,11 +31,18 @@ export class Client {
     }
 }
 
-export interface Change {
+export interface PlayerStatus {
+    current: Song | undefined
+    progress: number
+    playing: boolean
+    queue: Song[]
+}
+
+export interface PlayerStatusChange {
+    current?: Song | null
     progress?: number
-    qeuue?: Song[]
-    current?: Song
-    action?: Action
+    playing?: boolean
+    queue?: Song[]
 }
 
 export interface Song {
@@ -45,13 +52,6 @@ export interface Song {
     length: Number
     artwork?: URL | string
     metadata?: any
-}
-
-export enum Action {
-    Play,
-    Pause,
-    Next,
-    Prev,
 }
 
 export class PlayerState{

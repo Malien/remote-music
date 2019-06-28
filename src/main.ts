@@ -2,14 +2,15 @@ import { BrowserWindow, app } from 'electron'
 import { platform } from 'os'
 
 import * as pref from "./core/preferences"
-import { ServerInterconnect } from './core/server/server'
+import { PlayerServer, ClientServer } from "./core/server/server";
 import { interconnectFrom } from "./core/server/util"
 import { Listener } from "./core/client/listener"
 
 let requireSetup = !pref.canBeMerged(pref.path)
 
 let win: BrowserWindow
-let servers: ServerInterconnect
+let player: PlayerServer
+let client: ClientServer
 
 function createWindow(): BrowserWindow{
     win = new BrowserWindow({
@@ -24,8 +25,6 @@ function createWindow(): BrowserWindow{
     win.webContents.openDevTools()
     return win
 }
-
-let upd
 
 app.on('ready', (launchParams) => {
     console.log(pref.path)
@@ -48,15 +47,15 @@ app.on('ready', (launchParams) => {
     }
     console.log(preferences)
     if (typeof(preferences.server) != 'undefined') {
-        servers = interconnectFrom(preferences.server)
+        ({client, player} = interconnectFrom(preferences.server))
     }
-    setTimeout(() => {
-        upd = new Listener({
-            address: "ws://localhost:9090",
-            type: pref.ServerType.ws,
-            id: "testing-id"
-        })
-    }, 1)
+    // setTimeout(() => {
+    //     upd = new Listener({
+    //         address: "ws://localhost:9090",
+    //         type: pref.ServerType.ws,
+    //         id: "testing-id"
+    //     })
+    // }, 1)
 })
 
 app.on('window-all-closed', () =>{

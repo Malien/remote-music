@@ -2,7 +2,6 @@ import * as WebSocket from "ws";
 import { BrowserWindow } from "electron"
 
 import { ServerType } from "../preferences"
-import { Change } from "../components";
 
 interface ListenerConstructorOptions {
     type: ServerType
