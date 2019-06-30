@@ -1,15 +1,37 @@
-import { PlayerServer, ClientServer } from './server'
-import { Client, RemotePlayer, PlayerState } from '../components'
+import { PlayerServerAdapter, StreamingClientServerAdapter } from './server'
+import { Client, RemotePlayer, PlayerStatus } from '../components'
+import { Cache} from "../util/cache";
 import * as WebSocket from 'ws'
 
-export class WSClientServer implements ClientServer {
-    constructor(port: number){
+interface WSRequest {
+    type: string
+    payload?: any
+}
 
+export class WSClientServer extends StreamingClientServerAdapter {
+    ws: WebSocket.Server
+    constructor(port: number){
+        super()
+        this.ws = new WebSocket.Server({port})
+        this.ws.addListener("connection", (client) => {
+            client.addListener("message", (data) => {
+                try {
+                    let obj = JSON.parse(data.toString()) as WSRequest
+                    switch (obj.type) {
+                        
+                    }
+                } catch (e) {
+                    console.error(e)
+                }
+            }).addListener("error", (err) => {
+                console.error(err)
+            })
+        })
     }
 }
 
-export class WSPlayerServer implements PlayerServer {
+export class WSPlayerServer extends PlayerServerAdapter {
     constructor(port: number){
-
+        super()
     }
 }

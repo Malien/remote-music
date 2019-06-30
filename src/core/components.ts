@@ -53,7 +53,3 @@ export interface Song {
     artwork?: URL | string
     metadata?: any
 }
-
-export class PlayerState{
-    //TODO: write satate implementation
-}

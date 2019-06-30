@@ -32,6 +32,9 @@ export class Cache<T> {
         }, ttl*1000)
     }
     invalidate(key: string):void {
-        this.map.delete(key);
+        this.map.delete(key)
+    }
+    has(key: string):boolean {
+        return this.map.has(key)
     }
 }
