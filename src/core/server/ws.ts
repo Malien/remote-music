@@ -18,7 +18,14 @@ export class WSClientServer extends StreamingClientServerAdapter {
                 try {
                     let obj = JSON.parse(data.toString()) as WSRequest
                     switch (obj.type) {
-                        
+                        case "players":
+                            this.emit("players", client.send)
+                            break;
+                        case "playerStatus":
+                            this.emit("playerStatus", obj.payload.id, client.send, obj.payload.queueLimit)
+                            break;
+                        case "subscribe":
+                            this.emit("subscribe", )
                     }
                 } catch (e) {
                     console.error(e)
