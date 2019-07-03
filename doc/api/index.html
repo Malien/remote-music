@@ -74,7 +74,7 @@
                     </div>
                     <div class="example-box">
                         <h4>Server response</h4>
-                        <p>{<br>    "type":"playerStatus",<br>    "payload": {<br>        "id":"player-id"<br>        "current": {<br>            "title":"Doom Days",<br>            "artist":"Bastille",<br>            "album":"Doom Days",<br>            "length":140, <i>// length of song in seconds</i><br>            "artwork":"http://url-to-artwork" <i>//Optional</i><br>            "metadata":{<i>/**additional metadata**/</i>>} <i>//Optional</i><br>        },<br>        "progress": 130, <i>// current timestamp in seconds</i><br>        "playing": true, <i>// current play state</i><br>        "queue": [<br>            {<i>/** Song **/</i>},<br>            …<br>        ] <i>// the list of queued up song</i><br>    }<br>}</p>
+                        <p>{<br>    "type":"playerStatus",<br>    "payload": {<br>        "id":"player-id"<br>        "status":{<br>            "current": {<br>                "title":"Doom Days",<br>                "artist":"Bastille",<br>                "album":"Doom Days",<br>                "length":140, <i>// length of song in seconds</i><br>                "artwork":"http://url-to-artwork" <i>//Optional</i><br>                "metadata":{<i>/**additional metadata**/</i>>} <i>//Optional</i><br>            },<br>            "progress": 130, <i>// current timestamp in seconds</i><br>            "playing": true, <i>// current play state</i><br>            "queue": [<br>                {<i>/** Song **/</i>},<br>                …<br>            ] <i>// the list of queued up song</i><br>        }<br>    }<br></p>
                     </div>
                 </li>
                 <li>
@@ -84,6 +84,9 @@
                         by their id, after that server will notify about change that 
                         occurred in the player status.
                     </p>
+                    <p>
+                        If player becomes unavailable - subscription message with status field set to <val>null</val> will be sent
+                    </p>
                     <p>See also: <a href="#def-client-status">Player status payload formatting</a></p>
                     <div class="example-box">
                         <h4>Client request</h4>
@@ -91,7 +94,7 @@
                     </div>
                     <div class="example-box">
                         <h4>Server responses</h4>
-                        <p>{<br>    "type":"subscription",<br>    "payload":{<br>        "id":"player-id",<br>        "current": {<br>            "title":"Doom Days",<br>            "artist":"Bastille",<br>            "album":"Doom Days",<br>            "length":140, <i>// length of song in seconds</i><br>            "artwork":"http://url-to-artwork" <i>//Optional</i><br>            "metadata":{<i>/**additional metadata**/</i>} <i>//Optional</i><br>        },<br>        "progress": 130, <i>// current timestamp in seconds</i><br>        "playing": true, <i>// current play state</i><br>        "queue": [<br>            {<i>/** Song **/</i>},<br>            …<br>        ] <i>// the list of queued up song</i><br>    }<br>}</p>
+                        <p>{<br>    "type":"subscription",<br>    "payload": {<br>        "id":"player-id"<br>        "status":{<br>            "current": {<br>                "title":"Doom Days",<br>                "artist":"Bastille",<br>                "album":"Doom Days",<br>                "length":140, <i>// length of song in seconds</i><br>                "artwork":"http://url-to-artwork" <i>//Optional</i><br>                "metadata":{<i>/**additional metadata**/</i>>} <i>//Optional</i><br>            },<br>            "progress": 130, <i>// current timestamp in seconds</i><br>            "playing": true, <i>// current play state</i><br>            "queue": [<br>                {<i>/** Song **/</i>},<br>                …<br>            ] <i>// the list of queued up song</i><br>        }<br>    }<br></p>
                     </div>
                 </li>
                 <li>
@@ -225,16 +228,16 @@
             </div>
             <h3>Responding to remote change</h3>
             <p>
-                Additionally player must take into consideration server "statusChange" calls. 
+                Additionally player must take into consideration server <val>"statusChange"</val> calls. 
                 When such message is recieved, player should change internal state according to message,
                 and respond with its status. Be aware that statusChange messages could be partial 
                 (eg. when only play state should change every other field could be ommited)
             </p>
             <p>
                 If player initiated change (eg. user on the local machine changed song manually),
-                player should send "statusChange" message to keep server and clients in sync.
+                player should send <val>"statusChange"</val> message to keep server and clients in sync.
                 Additionally, on music skip or when playback continuue to the next song, 
-                "statusChange" message should be sent immidiately after.
+                <val>"statusChange"</val> message should be sent immidiately after.
             </p>
             <p>See also: <a href="#def-player-change">Player change formatting for player requests</a></p>
             <div class="example-box">

@@ -66,3 +66,13 @@ a {
 a:hover {
     color: #0055c4;
 }
+val {
+    padding: 2px;
+    background-color: #e2e2e2;
+    border-radius: 4px;
+    border: solid 1px #c0c0c0;
+    font-family: 'Consolas', 'Courier New', Courier, monospace;
+}
+.content>p {
+    line-height: 150%
+}
