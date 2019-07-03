@@ -7,6 +7,7 @@ export interface Comparartor<T>{
 export class RemotePlayer {
     id: string
     name: string
+    status: PlayerStatus
     constructor(){
         this.id = uuid()
     }
