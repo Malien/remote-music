@@ -1,4 +1,4 @@
-import { PlayerServerAdapter, StreamingClientServerAdapter } from './server'
+import { PlayerServerAdapter, StreamingClientServerAdapter } from './adapters'
 import * as WebSocket from 'ws'
 
 interface WSRequest {
