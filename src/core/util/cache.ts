@@ -25,6 +25,7 @@ export class Cache<T> {
         let invalidationToken = this.invalidationCount
         this.map.set(key, { value, invalidationToken })
         setTimeout(()=> {
+            this.changeEmitter.emit("pre-invalidation", key)
             let container = this.map.get(key) as ExistentialContainer<T>
             if (container.invalidationToken == invalidationToken) this.invalidate(key)
         }, ttl*1000)

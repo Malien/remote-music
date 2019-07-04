@@ -1,12 +1,60 @@
-import { PlayerServerAdapter, ClientServerAdapter, StreamingClientServerAdapter, Sender } from "./adapters"
-import { RemotePlayer } from "../components";
+import { PlayerServerAdapter, ClientServerAdapter, StreamingClientServerAdapter } from "./adapters"
+import { RemotePlayer, Sender } from "../components";
 import { Cache } from "../util/cache"
 
 export class PlayerServer {
     protected cache: Cache<RemotePlayer>
     protected adapter: PlayerServerAdapter
+    protected lookuptable: Map<string, Sender> = new Map<string, Sender>()
     constructor(cache: Cache<RemotePlayer>, adapter: PlayerServerAdapter) {
-
+        this.cache = cache
+        this.adapter = adapter
+        adapter.on("pong", (sender, status) => {
+            if (typeof sender.id == 'string' && cache.has(sender.id)) {
+                let player = cache.get(sender.id) as RemotePlayer
+                player.status = status
+                player.secondChance = true
+                cache.set(sender.id, player)
+            }
+        }).on("heartbeat", (sender, status) => {
+            if (typeof sender.id == 'string' && cache.has(sender.id)) {
+                let player = cache.get(sender.id) as RemotePlayer
+                player.status = status
+                player.secondChance = true
+                cache.set(sender.id, player)
+            }
+        }).on("register", (sender, name) => {
+            let player = new RemotePlayer({ name, sender })
+            this.lookuptable.set(player.id, sender)
+            this.cache.set(player.id, player)
+            let payload = {id: player.id, interval: this.cache.defaultTTL/2}
+            sender.send({type: "register", payload})
+        }).on("statusChange", (sender, statusChnage) => {
+            if (typeof sender.id == 'string' && cache.has(sender.id)) {
+                let player = cache.get(sender.id) as RemotePlayer
+                Object.entries(statusChnage).forEach(([key, value]) => {
+                    if (typeof value != 'undefined') {
+                        player.status[key] = value
+                    }
+                })
+                player.secondChance = true
+                cache.set(sender.id, player)
+            }
+        }).on("unregister", (sender) => {
+            if (typeof sender.id == 'string') {
+                if (this.lookuptable.has(sender.id)) this.lookuptable.delete(sender.id)
+                if (this.cache.has(sender.id)) this.cache.invalidate(sender.id)
+                sender.id = undefined
+            }
+        })
+        cache.changeEmitter.on("pre-invalidation", (key) => {
+            let player = cache.get(key) as RemotePlayer
+            if (player.secondChance) {
+                let sender = player.sender as Sender
+                sender.send({type: "ping"})
+            }
+            cache.set(key, player)
+        })
     }
 }
 export class ClientServer {
@@ -83,6 +131,15 @@ export class StreamingClientServer extends ClientServer {
                 this.subscriptions.set(key, senders.filter((_sender) => {
                     return _sender != sender
                 }))
+            }
+        })
+        cache.changeEmitter.on("change", (key, value) => {
+            if (this.subscriptions.has(key)) {
+                let senders = this.subscriptions.get(key) as Sender[]
+                senders.forEach((sender) => {
+                    sender.send({type: "subscription", payload: value})
+                })
+                if (value == null) this.subscriptions.delete(key)
             }
         })
     }

@@ -4,12 +4,25 @@ export interface Comparartor<T>{
     compare(o1:T, o2:T): number
 }
 
+export interface Sender {
+    send(msg: any, callback?: (...args: any[])=>any):void
+    id?:string
+}
+
 export class RemotePlayer {
     id: string
     name: string
     status: PlayerStatus
-    constructor(){
+    secondChance: boolean = true
+    sender?: Sender
+    constructor({ name, status, sender }: { name?: string; status?: PlayerStatus; sender?: Sender; } = {}){
         this.id = uuid()
+        this.name = name || "Unnamed"
+        this.status = status || {progress: 0, playing: false, queue: []}
+        this.sender = sender
+        if (typeof sender != 'undefined') {
+            sender.id = this.id
+        }
     }
 }
 
@@ -33,7 +46,7 @@ export class Client {
 }
 
 export interface PlayerStatus {
-    current: Song | undefined
+    current?: Song
     progress: number
     playing: boolean
     queue: Song[]

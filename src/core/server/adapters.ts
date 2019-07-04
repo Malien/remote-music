@@ -1,9 +1,5 @@
-import { Song, PlayerStatus, PlayerStatusChange } from "../components"
-import { EventEmitter } from "events";
-
-export interface Sender {
-    send(msg: any, callback?: (...args: any[])=>any):void
-}
+import { Song, PlayerStatus, PlayerStatusChange, Sender } from "../components"
+import { EventEmitter } from "events"
 
 export declare abstract class PlayerServerAdapter extends EventEmitter {
     on(event: "pong",                       listener: (sender: Sender, status: PlayerStatus)=>void):this
