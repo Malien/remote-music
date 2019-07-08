@@ -38,13 +38,13 @@ export class ObservableMap<V> extends EventEmitter implements Observable<V>, Map
         }
         return res
     }
-    public forEach = this.map.forEach
-    public has = this.map.has
+    public forEach: (callbackfn: (value: V, key: string, map: Map<string, V>)=>void)=>void = this.map.forEach.bind(this.map)
+    public has: (key: string)=>boolean = this.map.has.bind(this.map)
     public get size(): number { return this.map.size }
-    public [Symbol.iterator] = this.map.entries
-    public entries = this.map.entries
-    public keys = this.map.keys
-    public values = this.map.values
+    public [Symbol.iterator] = this.map.entries.bind(this.map)
+    public entries: ()=>IterableIterator<[string, V]> = this.map.entries.bind(this.map)
+    public keys: ()=>IterableIterator<string> = this.map.keys.bind(this.map)
+    public values: ()=>IterableIterator<V> = this.map.values.bind(this.map)
     public get [Symbol.toStringTag]() {
         return this.map.toString()
     }

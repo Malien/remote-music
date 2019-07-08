@@ -1,7 +1,7 @@
 import { Song, PlayerStatus, PlayerStatusChange, Sender } from "../components"
 import { EventEmitter } from "events"
 
-export declare abstract class PlayerServerAdapter extends EventEmitter {
+export interface PlayerServerAdapter {
     on(event: "pong",                       listener: (sender: Sender, status: PlayerStatus)=>void):this
     on(event: "heartbeat",                  listener: (sender: Sender, status: PlayerStatus)=>void):this
     on(event: "register",                   listener: (sender: Sender, name: string)=>void):this
@@ -43,7 +43,7 @@ export declare abstract class PlayerServerAdapter extends EventEmitter {
     emit(event: string | symbol,         ...args: any[]):boolean
 }
 
-export declare abstract class ClientServerAdapter extends EventEmitter {
+export interface ClientServerAdapter {
     on(event: "players",                    listener: (sender: Sender)=>void):this
     on(event: "playerStatus",               listener: (id: string, sender: Sender, queueLimit?: number)=>void):this
     on(event: "statusChange",               listener: (id: string, statusChange: PlayerStatusChange)=>void):this
@@ -75,7 +75,7 @@ export declare abstract class ClientServerAdapter extends EventEmitter {
     emit(event: string | symbol,         ...args: any):boolean
 }
 
-export declare abstract class StreamingClientServerAdapter extends ClientServerAdapter {
+export interface StreamingClientServerAdapter extends ClientServerAdapter {
     on(event: "players",                        listener: (sender: Sender)=>void):this
     on(event: "playerStatus",                   listener: (id: string, sender: Sender, queueLimit?: number)=>void):this
     on(event: "statusChange",                   listener: (id: string, statusChange: PlayerStatusChange)=>void):this

@@ -4,8 +4,10 @@ export interface Comparartor<T>{
     compare(o1:T, o2:T): number
 }
 
+type Transferable = string | ArrayBuffer | Buffer | Buffer[]
+
 export interface Sender {
-    send(msg: any, callback?: (...args: any[])=>any):void
+    send(msg: Transferable, callback?: (...args: any[])=>any):void
     id?:string
 }
 

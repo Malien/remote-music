@@ -2,6 +2,11 @@ import { PlayerServerAdapter, ClientServerAdapter, StreamingClientServerAdapter 
 import { RemotePlayer, Sender } from "../components";
 import { Cache } from "../util/cache"
 
+type boundObjSender = (msg: Object, callback?: (...args: any[])=>any)=>void
+function sendObj(this: Sender, msg: Object, callback?: (...args: any[])=>any):void {
+    this.send(JSON.stringify(msg), callback)
+}
+
 export class PlayerServer {
     protected cache: Cache<RemotePlayer>
     protected adapter: PlayerServerAdapter
@@ -28,7 +33,7 @@ export class PlayerServer {
             this.lookuptable.set(player.id, sender)
             this.cache.set(player.id, player)
             let payload = {id: player.id, interval: this.cache.defaultTTL/2}
-            sender.send({type: "register", payload})
+            sendObj.call(sender, {type: "register", payload})
         }).on("statusChange", (sender, statusChnage) => {
             if (typeof sender.id == 'string' && cache.has(sender.id)) {
                 let player = cache.get(sender.id) as RemotePlayer
@@ -49,11 +54,14 @@ export class PlayerServer {
         })
         cache.changeEmitter.on("pre-invalidation", (key) => {
             let player = cache.get(key) as RemotePlayer
+            let sender = player.sender as Sender
             if (player.secondChance) {
-                let sender = player.sender as Sender
-                sender.send({type: "ping"})
+                player.secondChance = false
+                cache.set(key, player, cache.defaultTTL/2)
+                sendObj.call(sender, {type: "ping"})
+            } else {
+                sendObj.call(sender, {type: "unregister"})
             }
-            cache.set(key, player)
         })
     }
 }
@@ -62,14 +70,18 @@ export class ClientServer {
     protected adapter: ClientServerAdapter
     constructor(cache: Cache<RemotePlayer>, adapter: ClientServerAdapter) {
         adapter.on("players", (sender) => {
-            let players = Array.from(this.cache.keys())
-            sender.send({type: "players", payload: players})
+            let payload = {}
+            this.cache.forEach((value, key) => {
+                payload[key] = value.name
+            })
+            sendObj.call(sender, {type: "players", payload})
         }).on("playerStatus", (id, sender, queueLimit=0) => {
             //TODO: queueLimit implementation
             if (cache.has(id)) {
                 let player = cache.get(id) as RemotePlayer 
                 let status = player.status
-                sender.send({type:"playerStatus", payload: {id, status}})
+                let name = player.name
+                sendObj.call(sender, {type:"playerStatus", payload: {id, name, status}})
             }
         }).on("statusChange", (id, statusChange) => {
             if (cache.has(id)) {
@@ -92,9 +104,12 @@ export class ClientServer {
 
 export class StreamingClientServer extends ClientServer {
     protected adapter: StreamingClientServerAdapter
-    private subscriptions: Map<string, Sender[]>
+    private subscriptions: Map<string, Sender[]> = new Map<string, Sender[]>()
     constructor(cache: Cache<RemotePlayer>, adapter: StreamingClientServerAdapter) {
         super(cache, adapter)
+        this.adapter = adapter
+        this.cache = cache
+        let _this = this
         this.adapter.on("subscribe", (id, sender, queueLimit) => {
             if (this.subscriptions.has(id)) {
                 let senders = this.subscriptions.get(id) as Sender[]
@@ -118,13 +133,13 @@ export class StreamingClientServer extends ClientServer {
                 let senders = this.subscriptions.get(id) as Sender[]
                 subscribed = senders.includes(sender)
             }
-            sender.send({type:"subscriptionStatus", payload: {id, subscribed}})
+            sendObj.call(sender, {type:"subscriptionStatus", payload: {id, subscribed}})
         }).on("subscriptions", (sender) => {
             let payload:string[] = []
             this.subscriptions.forEach((senders, id) => {
                 if (senders.includes(sender)) payload.push(id)
             })
-            sender.send({type:"subscriptions", payload})
+            sendObj.call(sender, {type:"subscriptions", payload})
         }).on("close", (sender) => {
             for (let key in this.subscriptions.keys()) {
                 let senders = this.subscriptions.get(key) as Sender[]
@@ -134,12 +149,12 @@ export class StreamingClientServer extends ClientServer {
             }
         })
         cache.changeEmitter.on("change", (key, value) => {
-            if (this.subscriptions.has(key)) {
-                let senders = this.subscriptions.get(key) as Sender[]
+            if (_this.subscriptions.has(key)) {
+                let senders = _this.subscriptions.get(key) as Sender[]
                 senders.forEach((sender) => {
-                    sender.send({type: "subscription", payload: value})
+                    sendObj.call(sender, {type: "subscription", payload: value})
                 })
-                if (value == null) this.subscriptions.delete(key)
+                if (value == null) _this.subscriptions.delete(key)
             }
         })
     }

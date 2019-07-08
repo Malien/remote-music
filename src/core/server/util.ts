@@ -13,14 +13,16 @@ export function interconnectFrom(conf: ServerTuple): ServerPair {
     //TODO: construct servers properly
     switch (conf.client.type){
         case ServerType.ws:
-            client = new StreamingClientServer(cache, new WSClientServerAdapter(conf.client.port))
+            let adapter = new WSClientServerAdapter(conf.client.port)
+            client = new StreamingClientServer(cache, adapter)
             break;
         default:
             throw new Error("invalid preferences object")
     }
     switch (conf.player.type){
         case ServerType.ws:
-            player = new PlayerServer(cache, new WSPlayerServerAdapter(conf.player.port))
+            let adapter = new WSPlayerServerAdapter(conf.player.port)
+            player = new PlayerServer(cache, adapter)
             break;
         default:
             throw new Error("invalid preferences object")

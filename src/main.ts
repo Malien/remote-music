@@ -8,12 +8,11 @@ import { Listener } from "./core/client/listener"
 
 let requireSetup = !pref.canBeMerged(pref.path)
 
-let win: BrowserWindow
 let player: PlayerServer
 let client: ClientServer
 
 function createWindow(): BrowserWindow{
-    win = new BrowserWindow({
+    let win = new BrowserWindow({
         width: 600,
         height: 400,
         frame: true,
@@ -29,6 +28,7 @@ function createWindow(): BrowserWindow{
 app.on('ready', (launchParams) => {
     console.log(pref.path)
     let preferences: pref.Preferences
+    let win = createWindow()
     if (requireSetup) {
         win.webContents.openDevTools()
         preferences = new pref.Preferences(false, {

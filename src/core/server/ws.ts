@@ -1,44 +1,46 @@
 import { PlayerServerAdapter, StreamingClientServerAdapter } from './adapters'
 import * as WebSocket from 'ws'
+import { EventEmitter } from 'events';
 
 interface WSRequest {
     type: string
     payload?: any
 }
 
-export class WSClientServerAdapter extends StreamingClientServerAdapter {
+export class WSClientServerAdapter extends EventEmitter implements StreamingClientServerAdapter {
     ws: WebSocket.Server
     constructor(port: number){
         super()
         this.ws = new WebSocket.Server({port})
+        let _this = this
         this.ws.addListener("connection", (client) => {
             client.addListener("message", (data) => {
                 try {
                     let obj = JSON.parse(data.toString()) as WSRequest
                     switch (obj.type) {
                         case "players":
-                            this.emit("players", client)
+                            _this.emit("players", client)
                             break;
                         case "playerStatus":
-                            this.emit("playerStatus", obj.payload.id, client, obj.payload.queueLimit)
+                            _this.emit("playerStatus", obj.payload.id, client, obj.payload.queueLimit)
                             break;
                         case "subscribe":
-                            this.emit("subscribe", obj.payload.id, client, obj.payload.queueLimit)
+                            _this.emit("subscribe", obj.payload.id, client, obj.payload.queueLimit)
                             break;
                         case "unsubscribe":
-                            this.emit("unsubscribe", obj.payload, client)
+                            _this.emit("unsubscribe", obj.payload, client)
                             break;
                         case "subscriptionStatus":
-                            this.emit("subscriptionStatus", obj.payload, client)
+                            _this.emit("subscriptionStatus", obj.payload, client)
                             break;
                         case "subscriptions":
-                            this.emit("subscriptions", client)
+                            _this.emit("subscriptions", client)
                             break;
                         case "statusChange":
-                            this.emit("statusChange", obj.payload.id, obj.payload)
+                            _this.emit("statusChange", obj.payload.id, obj.payload)
                             break;
                         case "queueUp":
-                            this.emit("queueUp", obj.payload.id, obj.payload.position, obj.payload.queue)
+                            _this.emit("queueUp", obj.payload.id, obj.payload.position, obj.payload.queue)
                             break;
                     }
                 } catch (e) {
@@ -47,7 +49,7 @@ export class WSClientServerAdapter extends StreamingClientServerAdapter {
             }).addListener("error", (err) => {
                 console.error(err)
             }).addListener("close", (code, message) => {
-                this.emit("close", client)
+                _this.emit("close", client)
                 console.log("Disconnected client: " + client.url + ", with code: " + code + ", for reason: " + message)
             })
         }).addListener("error", (err) => {
@@ -56,33 +58,39 @@ export class WSClientServerAdapter extends StreamingClientServerAdapter {
     }
 }
 
-export class WSPlayerServerAdapter extends PlayerServerAdapter {
+export class WSPlayerServerAdapter extends EventEmitter implements PlayerServerAdapter {
     ws: WebSocket.Server
     constructor(port: number){
         super()
         this.ws = new WebSocket.Server({port})
+        let _this = this
         this.ws.addListener("connection", (client) => {
             client.addListener("message", (data) => {
-                let obj = JSON.parse(data.toString()) as WSRequest
-                switch (obj.type) {
-                    case "pong":
-                        this.emit("pong", client, obj.payload)
-                        break;
-                    case "heartbeat":
-                        this.emit("heartbeat", client, obj.payload)
-                        break;
-                    case "register":
-                        this.emit("register", client, obj.payload)
-                        break;
-                    case "unregister":
-                        this.emit("unregister", client)
-                        break;
-                    case "statusChange":
-                        this.emit("statusChange", client, obj.payload)
-                        break;
+                let str = data.toString()
+                try {
+                    let obj = JSON.parse(str) as WSRequest
+                    switch (obj.type) {
+                        case "pong":
+                            _this.emit("pong", client, obj.payload)
+                            break;
+                        case "heartbeat":
+                            _this.emit("heartbeat", client, obj.payload)
+                            break;
+                        case "register":
+                            _this.emit("register", client, obj.payload)
+                            break;
+                        case "unregister":
+                            _this.emit("unregister", client)
+                            break;
+                        case "statusChange":
+                            _this.emit("statusChange", client, obj.payload)
+                            break;
+                    }
+                } catch (e) {
+                    console.error(e)
                 }
             }).addListener("close", (code, msg) => {
-                this.emit("close", client)
+                _this.emit("close", client)
             }).addListener("error", (err) => {
                 console.error(err)
             })
