@@ -61,7 +61,7 @@
                     </div>
                     <div class="example-box">
                         <h4>Server response</h4>
-                        <p>{<br>    "type":"players",<br>    "payload": [<br>        "id-of-a-player-1",<br>        "id-of-a-player-2",<br>        …<br>    ]<br>}</p>
+                        <p>{<br>    "type":"players",<br>    "payload": {<br>        "id-of-a-player-1":"name-of-a-player-1",<br>        "id-of-a-player-2":"name-of-a-player-2",<br>        …<br>    }<br>}</p>
                     </div>
                 </li>
                 <li>
@@ -74,7 +74,7 @@
                     </div>
                     <div class="example-box">
                         <h4>Server response</h4>
-                        <p>{<br>    "type":"playerStatus",<br>    "payload": {<br>        "id":"player-id"<br>        "status":{<br>            "current": {<br>                "title":"Doom Days",<br>                "artist":"Bastille",<br>                "album":"Doom Days",<br>                "length":140, <i>// length of song in seconds</i><br>                "artwork":"http://url-to-artwork" <i>//Optional</i><br>                "metadata":{<i>/**additional metadata**/</i>>} <i>//Optional</i><br>            },<br>            "progress": 130, <i>// current timestamp in seconds</i><br>            "playing": true, <i>// current play state</i><br>            "queue": [<br>                {<i>/** Song **/</i>},<br>                …<br>            ] <i>// the list of queued up song</i><br>        }<br>    }<br></p>
+                        <p>{<br>    "type":"playerStatus",<br>    "payload": {<br>        "id":"player-id"<br>        "name":"player-name"<br>        "status":{<br>            "current": {<br>                "title":"Doom Days",<br>                "artist":"Bastille",<br>                "album":"Doom Days",<br>                "length":140, <i>// length of song in seconds</i><br>                "artwork":"http://url-to-artwork" <i>//Optional</i><br>                "metadata":{<i>/**additional metadata**/</i>>} <i>//Optional</i><br>            },<br>            "progress": 130, <i>// current timestamp in seconds</i><br>            "playing": true, <i>// current play state</i><br>            "queue": [<br>                {<i>/** Song **/</i>},<br>                …<br>            ] <i>// the list of queued up song</i><br>        }<br>    }<br></p>
                     </div>
                 </li>
                 <li>
@@ -94,7 +94,7 @@
                     </div>
                     <div class="example-box">
                         <h4>Server responses</h4>
-                        <p>{<br>    "type":"subscription",<br>    "payload": {<br>        "id":"player-id"<br>        "status":{<br>            "current": {<br>                "title":"Doom Days",<br>                "artist":"Bastille",<br>                "album":"Doom Days",<br>                "length":140, <i>// length of song in seconds</i><br>                "artwork":"http://url-to-artwork" <i>//Optional</i><br>                "metadata":{<i>/**additional metadata**/</i>>} <i>//Optional</i><br>            },<br>            "progress": 130, <i>// current timestamp in seconds</i><br>            "playing": true, <i>// current play state</i><br>            "queue": [<br>                {<i>/** Song **/</i>},<br>                …<br>            ] <i>// the list of queued up song</i><br>        }<br>    }<br></p>
+                        <p>{<br>    "type":"subscription",<br>    "payload": {<br>        "id":"player-id"<br>        "name":"player-name"<br>        "status":{<br>            "current": {<br>                "title":"Doom Days",<br>                "artist":"Bastille",<br>                "album":"Doom Days",<br>                "length":140, <i>// length of song in seconds</i><br>                "artwork":"http://url-to-artwork" <i>//Optional</i><br>                "metadata":{<i>/**additional metadata**/</i>>} <i>//Optional</i><br>            },<br>            "progress": 130, <i>// current timestamp in seconds</i><br>            "playing": true, <i>// current play state</i><br>            "queue": [<br>                {<i>/** Song **/</i>},<br>                …<br>            ] <i>// the list of queued up song</i><br>        }<br>    }<br></p>
                     </div>
                 </li>
                 <li>
