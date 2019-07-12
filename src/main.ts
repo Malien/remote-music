@@ -4,7 +4,8 @@ import { platform } from 'os'
 import * as pref from "./core/preferences"
 import { PlayerServer, ClientServer } from "./core/server/server";
 import { interconnectFrom } from "./core/server/util"
-import { Listener } from "./core/client/listener"
+import { Updater } from "./core/client/updater";
+import { WSUpdaterAdapter } from "./core/client/ws";
 
 let requireSetup = !pref.canBeMerged(pref.path)
 
@@ -24,6 +25,8 @@ function createWindow(): BrowserWindow{
     win.webContents.openDevTools()
     return win
 }
+
+let upd: Updater
 
 app.on('ready', (launchParams) => {
     console.log(pref.path)
@@ -49,13 +52,7 @@ app.on('ready', (launchParams) => {
     if (typeof(preferences.server) != 'undefined') {
         ({client, player} = interconnectFrom(preferences.server))
     }
-    // setTimeout(() => {
-    //     upd = new Listener({
-    //         address: "ws://localhost:9090",
-    //         type: pref.ServerType.ws,
-    //         id: "testing-id"
-    //     })
-    // }, 1)
+    upd = new Updater(new WSUpdaterAdapter("ws://localhost:9091"))
 })
 
 app.on('window-all-closed', () =>{

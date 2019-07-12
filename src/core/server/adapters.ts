@@ -1,5 +1,4 @@
 import { Song, PlayerStatus, PlayerStatusChange, Sender } from "../components"
-import { EventEmitter } from "events"
 
 export interface PlayerServerAdapter {
     on(event: "pong",                       listener: (sender: Sender, status: PlayerStatus)=>void):this

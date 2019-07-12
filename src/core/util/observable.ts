@@ -6,7 +6,7 @@ interface Observable<V> {
 }
 
 export class ObservableMap<V> extends EventEmitter implements Observable<V>, Map<string, V> {
-    protected map = new Map<string, V>()
+    private map = new Map<string, V>()
     public get(key: string): V | undefined {
         return this.map.get(key)
     }
@@ -38,11 +38,16 @@ export class ObservableMap<V> extends EventEmitter implements Observable<V>, Map
         }
         return res
     }
-    public forEach: (callbackfn: (value: V, key: string, map: Map<string, V>)=>void)=>void = this.map.forEach.bind(this.map)
+    // public forEach: (callbackfn: (value: V, key: string, map: Map<string, V>)=>void)=>void = this.map.forEach.bind(this.map) 
+    forEach(callbackfn: (value: V, key: string, map: Map<string, V>)=>void) {
+        this.map.forEach((val, key, map) => {
+            callbackfn(val, key, map)
+        })
+    }
     public has: (key: string)=>boolean = this.map.has.bind(this.map)
     public get size(): number { return this.map.size }
-    public [Symbol.iterator] = this.map.entries.bind(this.map)
     public entries: ()=>IterableIterator<[string, V]> = this.map.entries.bind(this.map)
+    public [Symbol.iterator] = this.entries
     public keys: ()=>IterableIterator<string> = this.map.keys.bind(this.map)
     public values: ()=>IterableIterator<V> = this.map.values.bind(this.map)
     public get [Symbol.toStringTag]() {

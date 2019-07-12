@@ -13,8 +13,7 @@ export class Cache<T> {
     defaultTTL: number
     public get changeEmitter() : EventEmitter { return this.map }
 
-    //FIXME: revert ttl to something more sensible
-    constructor(defaultTTL = 10) {
+    constructor(defaultTTL = 500) {
         this.defaultTTL = defaultTTL
     }
 
@@ -38,6 +37,13 @@ export class Cache<T> {
     has(key: string):boolean {
         return this.map.has(key)
     }
-    forEach: (callbackfn: (value: T, key: string, map: Map<string, T>) => void, thisArg?: any)=> void = this.map.forEach.bind(this.map)
-    keys: (callbackfn: (value: T, key: string, map: Map<string, T>)=>void)=>void = this.map.keys.bind(this.map)
+    forEach(callbackfn: (value: T, key: string) => void) {
+        this.map.forEach((val, key) => {
+            callbackfn(val.value, key)
+        })
+    }
+    get size() {
+        return this.map.size
+    }
+    keys: () => IterableIterator<string> = this.map.keys.bind(this.map)
 }

@@ -10,7 +10,6 @@ export function interconnectFrom(conf: ServerTuple): ServerPair {
     let client: ClientServer
     let player: PlayerServer
     let cache = new Cache<RemotePlayer>()
-    //TODO: construct servers properly
     switch (conf.client.type){
         case ServerType.ws:
             let adapter = new WSClientServerAdapter(conf.client.port)

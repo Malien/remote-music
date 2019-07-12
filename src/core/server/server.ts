@@ -2,7 +2,6 @@ import { PlayerServerAdapter, ClientServerAdapter, StreamingClientServerAdapter 
 import { RemotePlayer, Sender } from "../components";
 import { Cache } from "../util/cache"
 
-type boundObjSender = (msg: Object, callback?: (...args: any[])=>any)=>void
 function sendObj(this: Sender, msg: Object, callback?: (...args: any[])=>any):void {
     this.send(JSON.stringify(msg), callback)
 }
@@ -69,11 +68,13 @@ export class ClientServer {
     protected cache: Cache<RemotePlayer>
     protected adapter: ClientServerAdapter
     constructor(cache: Cache<RemotePlayer>, adapter: ClientServerAdapter) {
+        let _this = this
         adapter.on("players", (sender) => {
             let payload = {}
-            this.cache.forEach((value, key) => {
-                payload[key] = value.name
-            })
+            let keys = Array.from(_this.cache.keys())
+            for (let index in keys) {
+                payload[keys[index]] = (_this.cache.get(keys[index]) as RemotePlayer).name
+            }
             sendObj.call(sender, {type: "players", payload})
         }).on("playerStatus", (id, sender, queueLimit=0) => {
             //TODO: queueLimit implementation
