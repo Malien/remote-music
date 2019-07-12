@@ -1,6 +1,6 @@
 import { EventEmitter } from "events";
 import { Adapter, UpdaterAdapter } from "./adapters";
-import { Transferable } from "../components";
+import { Transferable } from "../../shared/components";
 import * as WebSocket from "ws";
 
 interface WSRequest {

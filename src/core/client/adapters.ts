@@ -1,4 +1,4 @@
-import { Transferable, PlayerStatusChange, PlayerStatus } from "../components";
+import { Transferable, PlayerStatusChange, PlayerStatus } from "../../shared/components";
 import { EventEmitter } from "events";
 import * as WebSocket from "ws";
 import { on } from "cluster";

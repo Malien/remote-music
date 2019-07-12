@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
-    "build": "tsc src/main.ts --sourcemap --outDir dist --target es5"
+    "build": "tsc src/main.ts --sourcemap --outDir dist --target es5; cp -fR src/app dist"
   },
   "repository": {
     "type": "git",

@@ -1,5 +1,5 @@
 import { UpdaterAdapter } from "./adapters";
-import { PlayerStatus } from "../components";
+import { PlayerStatus } from "../../shared/components";
 
 //TODO: temporary updater
 

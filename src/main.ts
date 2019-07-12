@@ -1,49 +1,38 @@
-import { BrowserWindow, app } from 'electron'
+import { BrowserWindow, app, ipcMain, Event } from 'electron'
 import { platform } from 'os'
 
-import * as pref from "./core/preferences"
+import * as pref from "./shared/preferences"
 import { PlayerServer, ClientServer } from "./core/server/server";
 import { interconnectFrom } from "./core/server/util"
-import { Updater } from "./core/client/updater";
-import { WSUpdaterAdapter } from "./core/client/ws";
 
 let requireSetup = !pref.canBeMerged(pref.path)
+// let requireSetup = true
 
 let player: PlayerServer
 let client: ClientServer
 
-function createWindow(): BrowserWindow{
-    let win = new BrowserWindow({
-        width: 600,
-        height: 400,
-        frame: true,
-        webPreferences: {
-            nodeIntegration: true
-        }
+async function firstTimeSetup() {
+    return new Promise<pref.Preferences>((resolve, reject) => {
+        let ftsWin = new BrowserWindow({
+            height: 200,
+            width: 400
+        })
+        ftsWin.loadFile("./dist/app/setup/index.html")
+        ftsWin.show()
+        ipcMain.on("ffs-finish", (event:Event, args:pref.PrefConstructorArgs) => {
+            if (ftsWin.webContents == event.sender) resolve(new pref.Preferences(args))
+        })
+        ipcMain.on("ffs-err", (event) => {
+            if (event.frameId == ftsWin.id) reject()
+        })
     })
-    win.loadFile("src/app/index.html")
-    win.webContents.openDevTools()
-    return win
 }
 
-let upd: Updater
-
-app.on('ready', (launchParams) => {
+app.on('ready', async (launchParams) => {
     console.log(pref.path)
     let preferences: pref.Preferences
-    let win = createWindow()
     if (requireSetup) {
-        win.webContents.openDevTools()
-        preferences = new pref.Preferences(false, {
-            client: {
-                type: pref.ServerType.ws,
-                port: 9090
-            },
-            player: {
-                type: pref.ServerType.ws,
-                port: 9091
-            }
-        })
+        preferences = await firstTimeSetup()
         preferences.save(pref.path)
     } else {
         preferences = pref.read(pref.path);
@@ -52,7 +41,6 @@ app.on('ready', (launchParams) => {
     if (typeof(preferences.server) != 'undefined') {
         ({client, player} = interconnectFrom(preferences.server))
     }
-    upd = new Updater(new WSUpdaterAdapter("ws://localhost:9091"))
 })
 
 app.on('window-all-closed', () =>{
@@ -61,4 +49,4 @@ app.on('window-all-closed', () =>{
     }
 })
 
-app.on('activate', createWindow)
+//TODO: app.on("activate", ()=>{})

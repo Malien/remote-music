@@ -8,14 +8,26 @@
             "type": "node",
             "request": "launch",
             "name": "Main Run",
+            "cwd": "${workspaceRoot}",
             "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+            "args" : ["."],
+            "outputCapture": "std",
+            "windows": {
+                "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron.cmd"
+            },
             "program": "${workspaceFolder}/dist/main.js"
         },
         {
             "type": "node",
             "request": "launch",
+            "cwd": "${workspaceRoot}",
             "name": "Main Build&Run",
             "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+            "args" : ["."],
+            "outputCapture": "std",
+            "windows": {
+                "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/electron.cmd"
+            },
             "program": "${workspaceFolder}/dist/main.js",
             "preLaunchTask": "npm build"
         },

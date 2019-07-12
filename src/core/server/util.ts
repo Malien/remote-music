@@ -1,6 +1,6 @@
 import { ClientServer, StreamingClientServer, PlayerServer } from './server'
-import { ServerTuple, ServerType } from '../preferences'
-import { RemotePlayer } from '../components'
+import { ServerTuple, ServerType } from '../../shared/preferences'
+import { RemotePlayer } from '../../shared/components'
 import { Cache } from '../util/cache'
 import { WSClientServerAdapter, WSPlayerServerAdapter } from './ws'
 

@@ -2,11 +2,16 @@ import * as fs from 'fs';
 import { Comparartor } from './components';
 let currentVersion = require('./../../package.json').version as string
 
+export interface PrefConstructorArgs {
+    hasClient?: boolean,
+    server?: ServerTuple
+}
+
 export class Preferences {
     version: string
     hasClient: boolean
     server: ServerTuple
-    constructor(hasClient?: boolean, server?: ServerTuple){
+    constructor({ hasClient, server }: PrefConstructorArgs = {}){
         if (typeof(server) != 'undefined'){
             this.server = server as ServerTuple
         }
@@ -67,16 +72,18 @@ export function merge(data:any): Preferences{
         return data as Preferences
     }
     if (versionComparator.compare(version, "1.0.1") <= 0){
-        return new Preferences(data.hasClient, {
-            client:{
-                type: data.server.clientType,
-                port: data.server.clientPort
-            },
-            player: {
-                type: data.server.playerType,
-                port: data.server.playerPort
+        return new Preferences({
+            hasClient: data.hasClient, server: {
+                client: {
+                    type: data.server.clientType,
+                    port: data.server.clientPort
+                },
+                player: {
+                    type: data.server.playerType,
+                    port: data.server.playerPort
+                }
             }
-        })
+            })
     }
     throw new Error("Can't merge preferences")
 }
@@ -102,7 +109,7 @@ export function canBeMerged(path: string): boolean {
 
 var preferencePath = process.env.APPDATA || (process.platform == 'darwin' ? process.env.HOME + '/Library/Preferences' : process.env.HOME + "/.local/share")
 preferencePath += "/remote-music-preference.json"
-export let path = preferencePath
+export const path = preferencePath
     
 export function save(pref: Preferences, path: string){
     pref.save(path)

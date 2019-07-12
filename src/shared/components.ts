@@ -1,14 +1,14 @@
 let uuid = require('uuid/v1')
 
-export interface Comparartor<T>{
-    compare(o1:T, o2:T): number
-}
-
 export type Transferable = string | ArrayBuffer | Buffer | Buffer[]
 
 export interface Sender {
     send(msg: Transferable, callback?: (...args: any[])=>any):void
     id?:string
+}
+
+export interface Comparartor<T>{
+    compare(o1:T, o2:T): number
 }
 
 export class RemotePlayer {
