@@ -1,7 +1,7 @@
 import * as WebSocket from "ws";
 import { BrowserWindow } from "electron"
 
-import { ServerType } from "../preferences"
+import { ServerType } from "../../shared/preferences"
 
 interface ListenerConstructorOptions {
     type: ServerType
@@ -21,6 +21,7 @@ export class Listener {
                 nodeIntegration: true
             }
         })
+        //FIXME: file is not there anymore
         this.window.loadFile("./src/app/updater/index.html")
         this.window.webContents.openDevTools()
         this.window.webContents.on("did-finish-load", () => {

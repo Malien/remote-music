@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
-    "build": "tsc src/main.ts --sourcemap --outDir dist --target es5; cp -fR src/app dist"
+    "build": "tsc; echo \"Typescript compilation finished!\n\"; webpack; find src/app/views -not -name \"*.ts\" -type f -exec cp -fR {} dist/app/views/ \\;",
+    "clear": "rm -rf dist"
   },
   "repository": {
     "type": "git",
@@ -24,12 +25,21 @@
   },
   "homepage": "https://github.com/Malien/remote-music#readme",
   "devDependencies": {
+    "@types/react": "^16.8.23",
+    "@types/react-dom": "^16.8.4",
     "@types/ws": "^6.0.1",
-    "electron": "^4.1.1",
+    "electron": "^4.2.6",
     "electron-packager": "^13.1.1",
-    "typescript": "^3.5.2"
+    "source-map-loader": "^0.2.4",
+    "terser": "^4.1.2",
+    "ts-loader": "^6.0.4",
+    "typescript": "^3.5.2",
+    "webpack": "^4.35.3",
+    "webpack-cli": "^3.3.6"
   },
   "dependencies": {
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6",
     "uuid": "^3.3.2",
     "ws": "^6.2.0"
   },

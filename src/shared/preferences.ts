@@ -3,49 +3,61 @@ import { Comparartor } from './components';
 let currentVersion = require('./../../package.json').version as string
 
 export interface PrefConstructorArgs {
-    hasClient?: boolean,
+    client?: ClientTuple,
     server?: ServerTuple
 }
 
 export class Preferences {
     version: string
-    hasClient: boolean
+    client: ClientTuple
     server: ServerTuple
-    constructor({ hasClient, server }: PrefConstructorArgs = {}){
+    constructor({ client, server }: PrefConstructorArgs = {}){
         if (typeof(server) != 'undefined'){
             this.server = server as ServerTuple
         }
-        if (typeof(hasClient) != 'undefined'){
-            this.hasClient = hasClient as boolean
+        if (typeof(client) != 'undefined'){
+            this.client = client as ClientTuple
         }
         this.version = currentVersion
     }
-    read = function(path: string) {
+    read(path: string) {
         let data = fs.readFileSync(path).toString()
         let parsedData = JSON.parse(data)
         
         this.server = parsedData["server"]
-        this.hasClient = parsedData["hasClient"]
+        this.client = parsedData["client"]
+        this.version = parsedData["version"]
     }
-    save = function(path: string) {
+    save(path: string) {
         let str = JSON.stringify(this)
         fs.writeFileSync(path, str)
     }
 }
 
-export class ServerTuple {
+export interface ClientTuple {
+    client: ClientConfig
+    player?: ClientConfig
+}
+
+export interface ClientConfig {
+    type: ServerType
+    port: number
+    address: string
+}
+
+export interface ServerTuple {
     client: ServerConfig
     player: ServerConfig
 }
 
-export class ServerConfig {
+export interface ServerConfig {
     type: ServerType
     port: number
-    password?: string
 }
 
 export enum ServerType {
     ws,
+    //NOTE: none of the below have api implementation, nor do they have api spec
     http,
     https,
     tcp
@@ -72,8 +84,8 @@ export function merge(data:any): Preferences{
         return data as Preferences
     }
     if (versionComparator.compare(version, "1.0.1") <= 0){
-        return new Preferences({
-            hasClient: data.hasClient, server: {
+        return new Preferences({ 
+            server: {
                 client: {
                     type: data.server.clientType,
                     port: data.server.clientPort
@@ -114,3 +126,5 @@ export const path = preferencePath
 export function save(pref: Preferences, path: string){
     pref.save(path)
 }
+
+export default {Preferences, ServerType, versionComparator, merge, read, canBeMerged, path, save}
