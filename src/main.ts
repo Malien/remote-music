@@ -22,7 +22,7 @@ async function firstTimeSetup() {
         ftsWin.loadFile("./dist/app/views/first-time-setup.html")
         ftsWin.show()
         ftsWin.once("close", () => {
-            reject()
+
         })
         ipcMain.once("ffs-finish", (event:Event, args:PrefConstructorArgs) => {
             if (ftsWin.webContents == event.sender) {
@@ -38,7 +38,7 @@ async function firstTimeSetup() {
 
 function selectionMenu(config: ClientConfig, onSelection: (id: string)=>void) {
     let selectionWin = new BrowserWindow({
-        height: 600,
+        height: 500,
         width: 300
     })
     selectionWin.loadFile("./dist/app/views/selection.html")
@@ -75,8 +75,9 @@ app.on('ready', async () => {
         try {
             preferences = await firstTimeSetup()
         } catch (e) {
-            app.quit()
-            return
+            if (!preferences) {
+                app.quit()
+            }
         }
         preferences.save(pref.path)
     } else {

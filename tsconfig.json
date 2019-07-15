@@ -2,16 +2,23 @@
     "compilerOptions": {
         "removeComments": true,
         "strictNullChecks": true,
+        "sourceMap": true,
+        "incremental": true,
         "moduleResolution": "node",
         "jsx": "react",
         "outDir": "dist",
-        "incremental": true,
+        "target": "es5",
+        "module": "commonjs",
         "typeRoots": [
             "node_modules/@types"
         ],
         "lib": [
-            "dom"
+            "dom",
             "es2018"
         ]
-    }
+    },
+    "include": [
+        "src/main.ts",
+        "src/app/views/*.ts"
+    ]
 }
