@@ -4,6 +4,7 @@
         "strictNullChecks": true,
         "sourceMap": true,
         "incremental": true,
+        "esModuleInterop": true,
         "moduleResolution": "node",
         "jsx": "react",
         "outDir": "dist",

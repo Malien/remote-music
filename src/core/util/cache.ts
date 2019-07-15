@@ -2,25 +2,25 @@ import { ObservableMap } from "./observable"
 import { EventEmitter } from "events"
 
 interface ExistentialContainer<T> {
-    value: T
-    invalidationToken: number
+    value: T;
+    invalidationToken: number;
 }
 
 //Implemetation of active cache (one that proactively tells you when data is expired)
 export class Cache<T> {
     private map = new ObservableMap<ExistentialContainer<T>>()
     private invalidationCount: number = 0
-    defaultTTL: number
-    public get changeEmitter() : EventEmitter { return this.map }
+    public defaultTTL: number
+    public get changeEmitter(): EventEmitter { return this.map }
 
-    constructor(defaultTTL = 500) {
+    public constructor(defaultTTL = 500) {
         this.defaultTTL = defaultTTL
     }
 
-    get(key: string):T | undefined {
+    public get(key: string): T | undefined {
         return (this.map.get(key) as ExistentialContainer<T>).value
     }
-    set(key: string, value: T, ttl = this.defaultTTL):void {
+    public set(key: string, value: T, ttl = this.defaultTTL): void {
         this.invalidationCount++
         let invalidationToken = this.invalidationCount
         this.map.set(key, { value, invalidationToken })
@@ -30,20 +30,20 @@ export class Cache<T> {
             if (container.invalidationToken == invalidationToken) this.invalidate(key)
         }, ttl*1000)
     }
-    notify = this.map.commit.bind(this.map)
-    invalidate(key: string):void {
+    public notify = this.map.commit.bind(this.map)
+    public invalidate(key: string): void {
         this.map.delete(key)
     }
-    has(key: string):boolean {
+    public has(key: string): boolean {
         return this.map.has(key)
     }
-    forEach(callbackfn: (value: T, key: string) => void) {
+    public forEach(callbackfn: (value: T, key: string) => void) {
         this.map.forEach((val, key) => {
             callbackfn(val.value, key)
         })
     }
-    get size() {
+    public get size() {
         return this.map.size
     }
-    keys: () => IterableIterator<string> = this.map.keys.bind(this.map)
+    public keys: () => IterableIterator<string> = this.map.keys.bind(this.map)
 }

@@ -1,8 +1,8 @@
 import { EventEmitter } from "events"
 
 interface Observable<V> {
-    on(event: "change", listener: ()=>void):this
-    on(event: string, listener: (value: V)=>void):this
+    on(event: "change", listener: () => void): this;
+    on(event: string, listener: (value: V) => void): this;
 }
 
 export class ObservableMap<V> extends EventEmitter implements Observable<V>, Map<string, V> {
@@ -25,7 +25,7 @@ export class ObservableMap<V> extends EventEmitter implements Observable<V>, Map
     }
     public clear(): void {
         for (let key in this.map.keys()) {
-           this.emit(key, null)
+            this.emit(key, null)
         }
         this.emit("clear")
         this.map.clear()
@@ -39,17 +39,17 @@ export class ObservableMap<V> extends EventEmitter implements Observable<V>, Map
         return res
     }
     // public forEach: (callbackfn: (value: V, key: string, map: Map<string, V>)=>void)=>void = this.map.forEach.bind(this.map) 
-    forEach(callbackfn: (value: V, key: string, map: Map<string, V>)=>void) {
+    public forEach(callbackfn: (value: V, key: string, map: Map<string, V>) => void) {
         this.map.forEach((val, key, map) => {
             callbackfn(val, key, map)
         })
     }
-    public has: (key: string)=>boolean = this.map.has.bind(this.map)
+    public has: (key: string) => boolean = this.map.has.bind(this.map)
     public get size(): number { return this.map.size }
-    public entries: ()=>IterableIterator<[string, V]> = this.map.entries.bind(this.map)
+    public entries: () => IterableIterator<[string, V]> = this.map.entries.bind(this.map)
     public [Symbol.iterator] = this.entries
-    public keys: ()=>IterableIterator<string> = this.map.keys.bind(this.map)
-    public values: ()=>IterableIterator<V> = this.map.values.bind(this.map)
+    public keys: () => IterableIterator<string> = this.map.keys.bind(this.map)
+    public values: () => IterableIterator<V> = this.map.values.bind(this.map)
     public get [Symbol.toStringTag]() {
         return this.map.toString()
     }

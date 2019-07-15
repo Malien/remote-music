@@ -1,15 +1,15 @@
-import { PlayerServerAdapter, StreamingClientServerAdapter } from './adapters'
-import * as WebSocket from 'ws'
-import { EventEmitter } from 'events';
+import { PlayerServerAdapter, StreamingClientServerAdapter } from "./adapters"
+import * as WebSocket from "ws"
+import { EventEmitter } from "events"
 
 interface WSRequest {
-    type: string
-    payload?: any
+    type: string;
+    payload?: any;
 }
 
 export class WSClientServerAdapter extends EventEmitter implements StreamingClientServerAdapter {
-    ws: WebSocket.Server
-    constructor(port: number){
+    private ws: WebSocket.Server
+    public constructor(port: number){
         super()
         this.ws = new WebSocket.Server({port})
         let _this = this
@@ -20,28 +20,28 @@ export class WSClientServerAdapter extends EventEmitter implements StreamingClie
                     switch (obj.type) {
                         case "players":
                             _this.emit("players", client)
-                            break;
+                            break
                         case "playerStatus":
                             _this.emit("playerStatus", obj.payload.id, client, obj.payload.queueLimit)
-                            break;
+                            break
                         case "subscribe":
                             _this.emit("subscribe", obj.payload.id, client, obj.payload.queueLimit)
-                            break;
+                            break
                         case "unsubscribe":
                             _this.emit("unsubscribe", obj.payload, client)
-                            break;
+                            break
                         case "subscriptionStatus":
                             _this.emit("subscriptionStatus", obj.payload, client)
-                            break;
+                            break
                         case "subscriptions":
                             _this.emit("subscriptions", client)
-                            break;
+                            break
                         case "statusChange":
                             _this.emit("statusChange", obj.payload.id, obj.payload)
-                            break;
+                            break
                         case "queueUp":
                             _this.emit("queueUp", obj.payload.id, obj.payload.position, obj.payload.queue)
-                            break;
+                            break
                     }
                 } catch (e) {
                     console.error(e)
@@ -59,8 +59,8 @@ export class WSClientServerAdapter extends EventEmitter implements StreamingClie
 }
 
 export class WSPlayerServerAdapter extends EventEmitter implements PlayerServerAdapter {
-    ws: WebSocket.Server
-    constructor(port: number){
+    private ws: WebSocket.Server
+    public constructor(port: number){
         super()
         this.ws = new WebSocket.Server({port})
         let _this = this
@@ -72,24 +72,24 @@ export class WSPlayerServerAdapter extends EventEmitter implements PlayerServerA
                     switch (obj.type) {
                         case "pong":
                             _this.emit("pong", client, obj.payload)
-                            break;
+                            break
                         case "heartbeat":
                             _this.emit("heartbeat", client, obj.payload)
-                            break;
+                            break
                         case "register":
                             _this.emit("register", client, obj.payload)
-                            break;
+                            break
                         case "unregister":
                             _this.emit("unregister", client)
-                            break;
+                            break
                         case "statusChange":
                             _this.emit("statusChange", client, obj.payload)
-                            break;
+                            break
                     }
                 } catch (e) {
                     console.error(e)
                 }
-            }).addListener("close", (code, msg) => {
+            }).addListener("close", () => {
                 _this.emit("close", client)
             }).addListener("error", (err) => {
                 console.error(err)
