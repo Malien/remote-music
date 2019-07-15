@@ -5,11 +5,13 @@ import pref, {Preferences, PrefConstructorArgs, ClientConfig} from "./shared/pre
 import { PlayerServer, ClientServer } from "./core/server/server";
 import { interconnectFrom } from "./core/server/util"
 
-// let requireSetup = !pref.canBeMerged(pref.path)
-let requireSetup = true
+let requireSetup = !pref.canBeMerged(pref.path)
+// let requireSetup = true
 
 let player: PlayerServer
 let client: ClientServer
+
+let preferences: Preferences
 
 async function firstTimeSetup() {
     return new Promise<Preferences>((resolve, reject) => {
@@ -19,7 +21,7 @@ async function firstTimeSetup() {
         })
         ftsWin.loadFile("./dist/app/views/first-time-setup.html")
         ftsWin.show()
-        ftsWin.once("close", (event) => {
+        ftsWin.once("close", () => {
             reject()
         })
         ipcMain.once("ffs-finish", (event:Event, args:PrefConstructorArgs) => {
@@ -69,7 +71,6 @@ function clientWin(config: ClientConfig, id: string) {
 
 app.on('ready', async () => {
     console.log(pref.path)
-    let preferences: Preferences
     if (requireSetup) {
         try {
             preferences = await firstTimeSetup()
@@ -101,4 +102,8 @@ app.on('window-all-closed', () =>{
     }
 })
 
-//TODO: app.on("activate", ()=>{})
+app.on("activate", (event, hasVisibleWindows) => {
+    if (!hasVisibleWindows) selectionMenu(preferences.client.client, (id) => {
+        clientWin(preferences.client.client, id)
+    })
+})

@@ -27,6 +27,6 @@ window.onload = () => {
             }
         }
     }
-
+    console.log(prefConstructor)
     ipcRenderer.send("ffs-finish", prefConstructor)
 };

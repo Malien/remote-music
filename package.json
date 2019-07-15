@@ -7,7 +7,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
     "build": "tsc; echo \"Typescript compilation finished!\n\"; webpack; find src/app/views -not -name \"*.ts\" -type f -exec cp -fR {} dist/app/views/ \\;",
-    "clear": "rm -rf dist"
+    "clear": "rm -rf dist",
+    "remove-pref-mac": "rm ~/Library/Preferences/remote-music-preference.json"
   },
   "repository": {
     "type": "git",

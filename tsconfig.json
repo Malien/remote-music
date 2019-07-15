@@ -3,22 +3,15 @@
         "removeComments": true,
         "strictNullChecks": true,
         "moduleResolution": "node",
-        "target": "es5",
-        "module": "commonjs",
         "jsx": "react",
-        "sourceMap": true,
         "outDir": "dist",
         "incremental": true,
         "typeRoots": [
             "node_modules/@types"
         ],
         "lib": [
-            "dom",
+            "dom"
             "es2018"
         ]
-    },
-    "include": [
-        "src/main.ts",
-        "src/app/views/*.ts"
-    ]
+    }
 }

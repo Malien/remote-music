@@ -1,0 +1,13 @@
+{
+    "extends": "./tsconfig",
+    "compilerOptions": {
+        "target": "es3",
+        "module": "es6",
+        "lib": [
+            "dom"
+        ]
+    },
+    "include": [
+        "src/app/views/*.ts"
+    ]
+}
