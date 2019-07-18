@@ -6,9 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
-    "build": "tsc; echo \"Typescript compilation finished!\n\"; webpack;mkdir -p dist/app/views; find src/app/views -not -name \"*.ts\" -type f -exec cp -fR {} dist/app/views/ \\;",
+    "build": "tsc; echo \"Typescript compilation finished!\n\";mkdir -p dist/app/views; find src/app/views -not -name \"*.ts\" -type f -exec cp -fR {} dist/app/views/ \\;",
     "clear": "rm -rf dist",
-    "remove-pref-mac": "rm ~/Library/Preferences/remote-music-preference.json"
+    "remove-pref-mac": "rm ~/Library/Preferences/remote-music-preference.json",
+    "react-devtools": "react-devtools"
   },
   "repository": {
     "type": "git",
@@ -34,8 +35,9 @@
     "@typescript-eslint/parser": "^1.12.0",
     "electron": "^4.2.6",
     "electron-packager": "^13.1.1",
-    "eslint": "^6.0.1",
+    "eslint": "^5.16.0",
     "eslint-plugin-react": "^7.14.2",
+    "react-devtools": "^3.6.1",
     "source-map-loader": "^0.2.4",
     "terser": "^4.1.2",
     "ts-loader": "^6.0.4",

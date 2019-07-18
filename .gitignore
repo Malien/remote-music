@@ -66,6 +66,9 @@ out
 # compiled js files
 dist
 
+#misc
+tmp
+
 # System files
 .DS_Store
 .Thumbs

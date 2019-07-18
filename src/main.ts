@@ -7,8 +7,8 @@ import pref, {Preferences, PrefConstructorArgs, ClientConfig} from "./shared/pre
 import { PlayerServer, ClientServer } from "./core/server/server"
 import { interconnectFrom } from "./core/server/util"
 
-let requireSetup = !pref.canBeMerged(pref.path)
-// let requireSetup = true
+// let requireSetup = !pref.canBeMerged(pref.path)
+let requireSetup = true
 
 let player: PlayerServer
 let client: ClientServer
@@ -19,7 +19,9 @@ async function firstTimeSetup() {
     return new Promise<Preferences>((resolve, reject) => {
         let ftsWin = new BrowserWindow({
             height: 200,
-            width: 400
+            width: 400,
+            //I'm not so sure about resisable false here
+            resizable: false
         })
         ftsWin.loadFile("./dist/app/views/first-time-setup.html")
         ftsWin.show()
@@ -28,8 +30,13 @@ async function firstTimeSetup() {
         })
         ipcMain.once("ffs-finish", (event: Event, args: PrefConstructorArgs) => {
             if (ftsWin.webContents == event.sender) {
-                ftsWin.close()
+                // ftsWin.close()
                 resolve(new pref.Preferences(args))
+            }
+        })
+        ipcMain.on("ffs-expand", (event: Event, height: number) => {
+            if (ftsWin.webContents == event.sender) {
+                ftsWin.setContentSize(ftsWin.getContentSize()[1], height, true)
             }
         })
         ipcMain.once("ffs-err", (event: Event) => {
