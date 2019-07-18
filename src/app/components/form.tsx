@@ -1,31 +1,5 @@
 import React from "react"
 
-export class FormAgregator {
-    public state: Map<string, string> = new Map<string, string>()
-    private callback: (name: string, state: Map<string, string>) => void
-    public constructor(callback: (name: string, state: Map<string, string>) => void) {
-        this.callback = callback
-    }
-    public handleField(name: string, value: string) {
-        this.state.set(name, value)
-    }
-    public handleButton(name: string) {
-        this.callback(name, this.state)
-    }
-    public button(name: string, label?: string) {
-        let _this = this
-        return <Button label={label} click={() => _this.handleButton(name)}/>
-    }
-    public okButton(name: string, label?: string) {
-        let _this = this
-        return <OkButton label={label} click={() => _this.handleButton(name)}/>
-    }
-    public field(name: string, label?: string, placeholder?: string) {
-        let _this = this
-        return <InputField label={label} placeholder={placeholder} change={(event) => _this.handleField(name, event.target.value)}/>
-    }
-}
-
 interface ButtonConstructionArgs {
     label?: string;
     enabled?: boolean;
@@ -47,9 +21,10 @@ interface InputFieldProps {
     className?: string;
 }
 
+let inputFieldCount = 0
 export const InputField = ({label, placeholder, change, value, className = "", numeric, enabled=true}: InputFieldProps) => 
     <div className={"form-field-container " + className}>
-        {label}
+        <label htmlFor={"form-field-"+ ++inputFieldCount}>{label}</label>
         <input 
             disabled={!enabled}
             className="form-field" 
@@ -75,8 +50,10 @@ interface DoubleInputFieldProps {
 }
 
 export class DoubleInputField extends React.Component<DoubleInputFieldProps> {
-    private val1: string;
-    private val2: string;
+    private val1: string
+    private val2: string
+    private id: string = "form-double-filed-"+ ++DoubleInputField.count
+    private static count = 0
 
     public constructor (props: DoubleInputFieldProps) {
         super(props)
@@ -84,12 +61,12 @@ export class DoubleInputField extends React.Component<DoubleInputFieldProps> {
 
     public render() {
         return <div className={"form-field-container " + this.props.className}>
-            {this.props.label}
+            <label htmlFor={this.id}>{this.props.label}</label>
             <input 
                 disabled={this.props.disabled}
+                name={this.id}
                 className="form-field form-double-1" 
                 type={this.props.numeric ? "number" : "text"} 
-                name={this.props.label} 
                 placeholder={this.props.placeholder} 
                 onChange={(event)=> {
                     this.val1 = event.target.value
@@ -101,7 +78,6 @@ export class DoubleInputField extends React.Component<DoubleInputFieldProps> {
                 disabled={this.props.disabled}
                 className="form-field form-double-2"
                 type={this.props.nextNumeric ? "number" : "text"} 
-                name={this.props.label} 
                 placeholder={this.props.nextPlaceholder} 
                 onChange={(event)=> {
                     this.val2 = event.target.value
@@ -121,10 +97,11 @@ interface CheckboxProps {
     check: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
+let checkboxCount = 0
 export const Checkbox = ({label, value, check, disabled, checked}: CheckboxProps) => 
     <div>
-        <input type="checkbox" className="form-checkbox-box" value={value} disabled={disabled} checked={checked} onChange={check}/>
-        {label}
+        <input type="checkbox" className="form-checkbox" id={"form-checkbox-" + ++checkboxCount} value={value} disabled={disabled} checked={checked} onChange={check}/>
+        <label htmlFor={"form-checkbox-" + checkboxCount}>{label}</label>
     </div>
 
 export class CheckboxSpoiler extends React.Component<CheckboxProps, {shown: boolean}> {
