@@ -1,5 +1,4 @@
 import React from "react"
-import { string } from "prop-types";
 
 export class FormAgregator {
     public state: Map<string, string> = new Map<string, string>()
@@ -43,17 +42,18 @@ interface InputFieldProps {
     placeholder?: string;
     enabled?: boolean;
     value?: string;
+    numeric?: boolean;
     change: (event: React.ChangeEvent<HTMLInputElement>) => void;
     className?: string;
 }
 
-export const InputField = ({label, placeholder, change, value, className = "", enabled=true}: InputFieldProps) => 
+export const InputField = ({label, placeholder, change, value, className = "", numeric, enabled=true}: InputFieldProps) => 
     <div className={"form-field-container " + className}>
         {label}
         <input 
             disabled={!enabled}
             className="form-field" 
-            type="text" 
+            type={numeric ? "number" : "text"}
             name={label} 
             placeholder={placeholder} 
             onChange={change}
@@ -66,8 +66,10 @@ interface DoubleInputFieldProps {
     nextValue?: string;
     label?: string;
     placeholder?: string;
-    enabled?: boolean;
+    disabled?: boolean;
     value?: string;
+    numeric?: boolean;
+    nextNumeric?: boolean;
     change: (val1: string, val2: string) => void;
     className?: string;
 }
@@ -84,26 +86,26 @@ export class DoubleInputField extends React.Component<DoubleInputFieldProps> {
         return <div className={"form-field-container " + this.props.className}>
             {this.props.label}
             <input 
-                disabled={!this.props.enabled}
+                disabled={this.props.disabled}
                 className="form-field form-double-1" 
-                type="text" 
+                type={this.props.numeric ? "number" : "text"} 
                 name={this.props.label} 
                 placeholder={this.props.placeholder} 
                 onChange={(event)=> {
                     this.val1 = event.target.value
-                    if (this.val1 && this.val2) this.props.change(this.val1, this.val2)
+                    this.props.change(this.val1, this.val2)
                 }}
                 value={this.props.value}
             />
             <input
-                disabled={!this.props.enabled}
+                disabled={this.props.disabled}
                 className="form-field form-double-2"
-                type="text" 
+                type={this.props.nextNumeric ? "number" : "text"} 
                 name={this.props.label} 
                 placeholder={this.props.nextPlaceholder} 
                 onChange={(event)=> {
                     this.val2 = event.target.value
-                    if (this.val1 && this.val2) this.props.change(this.val1, this.val2)
+                    this.props.change(this.val1, this.val2)
                 }}
                 value={this.props.nextValue}
             />
@@ -113,60 +115,35 @@ export class DoubleInputField extends React.Component<DoubleInputFieldProps> {
 
 interface CheckboxProps {
     label: string;
-    checked?: boolean;
     value?: string;
+    disabled?: boolean;
+    checked: boolean;
     check: (event: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-export const Checkbox = ({label, value, check, checked=false}: CheckboxProps) => 
+export const Checkbox = ({label, value, check, disabled, checked}: CheckboxProps) => 
     <div>
-        <input type="checkbox" className="form-checkbox-box" value={value} onChange={check} checked={checked}/>
+        <input type="checkbox" className="form-checkbox-box" value={value} disabled={disabled} checked={checked} onChange={check}/>
         {label}
     </div>
 
-export class CheckboxSpoiler extends React.Component<CheckboxProps, boolean> {
+export class CheckboxSpoiler extends React.Component<CheckboxProps, {shown: boolean}> {
     public constructor(props: CheckboxProps) {
         super(props)
-        this.state = props.checked || false
+        this.state = {shown: false}
     }
 
     public render() {
         return (
             <div>
-                <Checkbox label={this.props.label} checked={this.props.checked || false} value={this.props.value} check={(event)=>{this.setState(event.target.checked)}} />
+                <Checkbox label={this.props.label} disabled={this.props.disabled} checked={this.props.checked} value={this.props.value} check={(event)=>{
+                    this.setState({shown: event.target.checked})
+                    this.props.check(event)}} />
                 <div className="form-spoiler-divider"/>
                 <div className={"form-spoiler " + this.state ? "form-shown" : "form-hidden"}>
                     {this.props.children}
                 </div>
             </div>
         )
-    }
-}
-
-interface FormContructorArgs {
-    buttonClick: (name: string, state: Record<string, any>) => void;
-}
-
-//TODO: reimplement form component
-export class Form extends React.Component<{buttonClick: (name: string, state: Record<string, any>) => void}, Record<string, any>> {
-    public constructor(props: FormContructorArgs) {
-        super(props)
-        this.state = {}
-        this.hageField = this.hageField.bind(this)
-    }
-
-    public handleButton(name: string) {
-        this.props.buttonClick(name, this.state)
-    }
-
-    public hageField(name: string, value: string) {
-        let entry = {}
-        entry[name] = value
-        let newState = Object.assign({}, this.state, entry)
-        this.setState(newState)
-    }
-
-    public render() {
-        return <div className="form"></div>
     }
 }

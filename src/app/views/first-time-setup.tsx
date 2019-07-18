@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { ipcRenderer, BrowserWindow } from "electron"
 import ReactDOM from "react-dom"
 import React, { Component } from "react"
 
-import { PrefConstructorArgs, ServerType, ClientConfig, ServerConfig, ServerTuple } from "../../shared/preferences"
+import { PrefConstructorArgs, ServerType, ClientConfig, ServerTuple, ClientTuple } from "../../shared/preferences"
 
-import { Button, OkButton, InputField, DoubleInputField, Checkbox, CheckboxSpoiler } from "../components/form"
+import { OkButton, InputField, DoubleInputField, Checkbox, CheckboxSpoiler } from "../components/form"
+import { ipcRenderer } from "electron"
 
 // let form = new FormAgregator((name, state) => {console.log(state)})
 
@@ -19,96 +19,99 @@ import { Button, OkButton, InputField, DoubleInputField, Checkbox, CheckboxSpoil
 
 interface FormState {
     connectionType: ServerType;
-    connectionAddr?: string;
-    connectionPort?: number;
-    server?: {clientPort?: number; playerPort?: number};
-    playerPort?: number;
+    address?: string;
+    clientPort?: string;
+    playerPort?: string;
+    client: boolean;
+    server: boolean;
+    player: boolean;
 }
 
 class Form extends Component<{}, FormState> {
     public constructor(props: {} = {}){
         super(props)
-        this.state = {connectionType: ServerType.ws}
+        this.state = {connectionType: ServerType.ws, client: true, server: false, player: false}
     }
 
     private validate(): boolean {
-        return ((typeof this.state.server != "undefined" && this.state.server != null)
-            && typeof this.state.server.clientPort != "undefined"
-            && typeof this.state.server.playerPort != "undefined")
-            || (typeof this.state.connectionAddr != "undefined"
-            && typeof this.state.connectionPort != "undefined")
+        return ((!this.state.client) || (this.state.client && this.state.address != undefined && this.state.clientPort != undefined))
+                && ((!this.state.server) || (this.state.server && this.state.clientPort != undefined && this.state.playerPort != undefined))
+                && ((!this.state.player) || (this.state.player && this.state.address != undefined && this.state.playerPort != undefined))
+                && (this.state.client || this.state.server || (this.state.client && this.state.player))
     }
 
     public render() {
         return (
             <div>
-                <DoubleInputField label="Server address" placeholder="ws://" nextPlaceholder="port" change={(address, portstr)=>{
-                    let port = parseInt(portstr)
-                    if (!isNaN(port) && port > 80) {
-                        this.setState(Object.assign({}, this.state, {connectionAddr: address, connectionPort: port}))
-                    }
-                }}/>
-                <CheckboxSpoiler label="Host own server" check={(event)=>{
-                    if (event.target.checked) this.setState(Object.assign({}, this.state, {server: {}}))
-                    else this.setState(Object.assign({}, this.state, {server: null}))
+                <DoubleInputField 
+                    label="Server address" 
+                    value={this.state.address} 
+                    nextValue={this.state.clientPort} 
+                    placeholder="ws://" 
+                    nextPlaceholder="port" 
+                    disabled={this.state.server} 
+                    nextNumeric={true}
+                    change={(address, portstr)=>{
+                        this.setState(Object.assign({}, this.state, {address: address, clientPort: portstr}))
+                    }}
+                />
+                <CheckboxSpoiler checked={this.state.server} label="Host own server" check={(event)=>{
+                    if (event.target.checked) this.setState(Object.assign({}, this.state, {server: true, address:"ws://localhost"}))
+                    else this.setState(Object.assign({}, this.state, {server: false}))
                 }}>
-                    <InputField label="Client server port " change={(event)=>{
-                        let port = parseInt(event.target.value)
-                        if (!isNaN(port) && port > 80 && this.state.server) {
-                            let state = Object.assign({}, this.state)
-                            let server = state.server as {clientPort?: number; playerPort?: number}
-                            server.clientPort = port
-                            this.setState(state)
-                        }
+                    <InputField numeric={true} value={this.state.clientPort} label="Client server port" enabled={this.state.server} change={(event)=>{
+                        this.setState(Object.assign({}, this.state, {clientPort: event.target.value}))
                     }}/>
-                    <InputField label="Player server port " change={(event)=>{
-                        let port = parseInt(event.target.value)
-                        if (!isNaN(port) && port > 80 && this.state.server) {
-                            let state = Object.assign({}, this.state)
-                            let server = state.server as {clientPort?: number; playerPort?: number}
-                            server.playerPort = port
-                        }
+                    <InputField numeric={true} value={(this.state.playerPort)} label="Player server port" enabled={this.state.server} change={(event)=>{
+                        this.setState(Object.assign({}, this.state, {playerPort: event.target.value}))
+                    }}/>
+                    <Checkbox disabled={!this.state.server} checked={!this.state.client && !this.state.player} label="Headless" check={(event)=>{
+                        if (event.target.checked) this.setState(Object.assign({}, this.state, {client: false, player: false}))
+                        else this.setState(Object.assign({}, this.state, {client: true}))
                     }}/>
                 </CheckboxSpoiler>
-                <CheckboxSpoiler label="Includes player" check={(event)=>{
-                    if (!event.target.checked) {
-                        let state: FormState = Object.assign({}, this.state)
-                        delete state.playerPort
-                        this.setState(state)
-                    }
+                <CheckboxSpoiler disabled={!this.state.client} checked={this.state.player} label="Includes player" check={(event)=>{
+                    this.setState(Object.assign({}, this.state, {player: event.target.checked}))
                 }}>
-                    <InputField label="Player server port" change={(event)=>{
-                        let port = parseInt(event.target.value)
-                        if (!isNaN(port) && port > 80 && this.state.server) {
-                            this.setState(Object.assign({}, this.state, {playerPort: port}))
-                        }
+                    <InputField numeric={true} value={(this.state.playerPort)} label="Player server port" enabled={this.state.player} change={(event)=>{
+                        this.setState(Object.assign({}, this.state, {playerPort: event.target.value}))
                     }}/>
                 </CheckboxSpoiler>
                 <OkButton label="Continue" click={()=>{
-                    let clientClient: ClientConfig
-                    let clientPlayer: ClientConfig
-                    let server: ServerTuple
-                    if (this.state.server) {
-                        let serverClient = {
-                            type: ServerType.ws,
-                            port: this.state.server.clientPort as number
-                        }
-                        clientClient = Object.assign({}, serverClient, {address: "localhost"})
-                        let serverPlayer = Object.assign({}, serverClient, {port: this.state.server.playerPort})
-                        server = {client: serverClient, player: serverPlayer}
-                        if (this.state.playerPort) {
-                            clientPlayer = Object.assign({}, clientClient, {port: this.state.server.playerPort})
-                        }
-                    } else {
-                        clientClient = {
-                            type: ServerType.ws, 
-                            port: this.state.connectionPort as number,
-                            address: this.state.connectionAddr as string
-                        }
-                        if (this.state.playerPort) {
-                            clientPlayer = Object.assign({}, clientClient, {port: this.state.playerPort})
+                    let client: ClientTuple | undefined
+                    let player: ClientConfig | undefined
+                    let server: ServerTuple | undefined
+                    if (this.state.player) {
+                        player = {
+                            type: this.state.connectionType,
+                            port: parseInt(this.state.clientPort as string),
+                            address: this.state.address as string
                         }
                     }
+                    if (this.state.client) {
+                        client = {
+                            client: {
+                                type: this.state.connectionType,
+                                port: parseInt(this.state.playerPort as string),
+                                address: this.state.address as string
+                            },
+                            player
+                        }
+                    }
+                    if (this.state.server) {
+                        server = {
+                            client: {
+                                type: this.state.connectionType,
+                                port: parseInt(this.state.clientPort as string)
+                            },
+                            player: {
+                                type: this.state.connectionType,
+                                port: parseInt(this.state.playerPort as string)
+                            }
+                        }
+                    }
+                    let pref: PrefConstructorArgs = { client, server }
+                    ipcRenderer.send("ffs-finish", pref)
                 }} enabled={this.validate()}/>
             </div>
         )
@@ -119,30 +122,3 @@ ReactDOM.render(
     <Form />,
     document.getElementById("form")
 )
-
-let prefConstructor: PrefConstructorArgs = {
-    client: {
-        client: {
-            type: ServerType.ws,
-            port: 9090,
-            address: "localhost"
-        },
-        player: {
-            type: ServerType.ws,
-            port: 9091,
-            address: "localhost"
-        }
-    },
-    server: {
-        client: {
-            type: ServerType.ws,
-            port: 9090
-        },
-        player: {
-            type: ServerType.ws,
-            port: 9091
-        }
-    }
-}
-console.log(prefConstructor)
-// ipcRenderer.send("ffs-finish", prefConstructor)s
