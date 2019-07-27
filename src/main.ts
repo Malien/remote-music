@@ -22,7 +22,7 @@ async function firstTimeSetup() {
             height: 200,
             width: 500,
             //I'm not so sure about resisable false here
-            resizable: false,
+            resizable: true,
             titleBarStyle: "hiddenInset",
             title:"First time setup",
             frame: false,
