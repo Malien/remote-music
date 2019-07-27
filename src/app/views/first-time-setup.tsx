@@ -1,21 +1,17 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import ReactDOM from "react-dom"
 import React, { Component } from "react"
+import { ipcRenderer } from "electron"
 
 import { PrefConstructorArgs, ServerType, ClientConfig, ServerTuple, ClientTuple } from "../../shared/preferences"
 
 import { OkButton, InputField, DoubleInputField, Checkbox, CheckboxSpoiler } from "../components/form"
-import { ipcRenderer } from "electron"
+import { InsetTitlebarWindow } from "../components/window";
 
-// let form = new FormAgregator((name, state) => {console.log(state)})
-
-// let formView = 
-// <div className="form">
-//     {form.field("test", "label", "placeholder")}
-//     {/* <div style={{"display":"flex"}}> */}
-//     {form.okButton("Submit")}
-//     {/* </div> */}
-// </div>
+function docHeight() {
+    // return Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight )
+    return document.body.offsetHeight + 16
+}
 
 interface FormState {
     connectionType: ServerType;
@@ -34,15 +30,15 @@ class Form extends Component<{}, FormState> {
     }
 
     private validate(): boolean {
-        return ((!this.state.client) || (this.state.client && this.state.address != undefined && this.state.clientPort != undefined))
-                && ((!this.state.server) || (this.state.server && this.state.clientPort != undefined && this.state.playerPort != undefined))
-                && ((!this.state.player) || (this.state.player && this.state.address != undefined && this.state.playerPort != undefined))
+        return ((!this.state.client) || (this.state.client && Boolean(this.state.address) && Boolean(this.state.clientPort)))
+                && ((!this.state.server) || (this.state.server && Boolean(this.state.clientPort) && Boolean(this.state.playerPort)))
+                && ((!this.state.player) || (this.state.player && Boolean(this.state.address) && Boolean(this.state.playerPort)))
                 && (this.state.client || this.state.server || (this.state.client && this.state.player))
     }
 
     public render() {
         return (
-            <div>
+            <InsetTitlebarWindow title="First time setup">
                 <DoubleInputField 
                     label="Server address" 
                     value={this.state.address} 
@@ -58,6 +54,7 @@ class Form extends Component<{}, FormState> {
                 <CheckboxSpoiler checked={this.state.server} label="Host own server" check={(event)=>{
                     if (event.target.checked) this.setState(Object.assign({}, this.state, {server: true, address:"ws://localhost"}))
                     else this.setState(Object.assign({}, this.state, {server: false}))
+                    setImmediate(() => ipcRenderer.send("ffs-expand", docHeight()))
                 }}>
                     <InputField numeric={true} value={this.state.clientPort} label="Client server port" enabled={this.state.server} change={(event)=>{
                         this.setState(Object.assign({}, this.state, {clientPort: event.target.value}))
@@ -72,6 +69,7 @@ class Form extends Component<{}, FormState> {
                 </CheckboxSpoiler>
                 <CheckboxSpoiler disabled={!this.state.client} checked={this.state.player} label="Includes player" check={(event)=>{
                     this.setState(Object.assign({}, this.state, {player: event.target.checked}))
+                    setImmediate(() => ipcRenderer.send("ffs-expand", docHeight()))
                 }}>
                     <InputField numeric={true} value={(this.state.playerPort)} label="Player server port" enabled={this.state.player} change={(event)=>{
                         this.setState(Object.assign({}, this.state, {playerPort: event.target.value}))
@@ -84,7 +82,7 @@ class Form extends Component<{}, FormState> {
                     if (this.state.player) {
                         player = {
                             type: this.state.connectionType,
-                            port: parseInt(this.state.clientPort as string),
+                            port: parseInt(this.state.playerPort as string),
                             address: this.state.address as string
                         }
                     }
@@ -113,12 +111,15 @@ class Form extends Component<{}, FormState> {
                     let pref: PrefConstructorArgs = { client, server }
                     ipcRenderer.send("ffs-finish", pref)
                 }} enabled={this.validate()}/>
-            </div>
+                <div style={{"height":"50px"}} />
+            </InsetTitlebarWindow>
         )
     }
 }
 
 ReactDOM.render(
-    <Form />,
+    <Form/>,
     document.getElementById("form")
 )
+
+ipcRenderer.send("ffs-initial", docHeight())

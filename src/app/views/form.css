@@ -1,15 +1,29 @@
+:root {
+    --font-size: 20px;
+    --field-font-size: 16px;
+    --button-font-size: 26px;
+
+    --text-color: #555555;
+    --disabled-text-color: #9B9B9B;
+}
 .form-button {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    box-shadow: 2px 5px 20px 1px #00000040;
     width: 200px;
     height: 50px;
-    margin: 10px;
+    margin: 15px;
     border-radius: 25px;
     border: none;
     text-align: center;
     background-color: #d6d6d6;
-    font-size: 32px;
+    font-size: var(--button-font-size);
+    font-family: apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     color: #ffffff;
-    -webkit-transition: background 0.2s ease-in 0;
-    transition: background 0.2s ease-in 0;
+    -webkit-transition: background 0.2s ease-in;
+    transition: background 0.1s ease-in;
+    outline: 0;
 }
 .form-button:hover {
     background-color: #c2c2c2;
@@ -20,14 +34,110 @@
 .form-button.form-ok:hover {
     background-color: #59b861;
 }
+.form-button:disabled {
+    background-color: #e0e0e0;
+}
+.form-button.form-ok:disabled {
+    background-color: #8a998b;
+}
 .form-field-container {
-
+    font-size: var(--font-size);
+    font-family: apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color: var(--text-color);
+    display: flex;
+    margin: 5px 0;
+}
+.form-field {
+    position: relative;
+    padding: 5px;
+    margin: 0 0 0 2%;
+    color: var(--text-color);
+    border-radius: 4px;
+    border: solid 1px #cccccc;
+    background-color: #F7F7F7;
+    -webkit-appearance: none;
+    outline: 0;
+    transition: background 0.2s ease-in-out;
+    font-size: var(--field-font-size);
+    font-family: apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+.form-field:disabled {
+    background-color: #EBEBEB;
 }
 .form-field-label {
-
+    flex-shrink: 0;
+    align-self: center;
 }
-.form-field-input {
-
+.form-disabled {
+    color: var(--disabled-text-color);
+}
+.form-double-container {
+    flex-grow: 1;
+}
+.form-double-1 {
+    width: 60%;
+}
+.form-double-2 {
+    width: 28%;
+}
+.form-spoiler {
+    margin-left: 29px;
+}
+.form-hidden {
+    display: none;
+}
+.form-checkbox-container {
+    display: flex;
+    margin: 5px 0;
+    flex-shrink: 0;
+}
+.form-checkbox {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border: solid 1px #cccccc;
+    border-radius: 4px;
+    margin: 3px;
+    outline: 0;
+    transition: background 0.2s ease-in-out;
+}
+.form-checkbox:active:checked, .form-checkbox:active {
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px 1px 3px rgba(0,0,0,0.1);
+}
+.form-checkbox:disabled {
+    background-color: #dbdbdb;
+}
+.form-checkbox:checked {
+    background-color: #A5F06D;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05), inset 0px -15px 10px -12px rgba(0,0,0,0.05), inset 15px 10px -12px rgba(255,255,255,0.1);
+}
+.form-checkbox:checked::after {
+    font-size: 24px;
+    content: '✓';
+    position: absolute;
+    /* top: 0px; */
+    /* left: 3px; */
+    margin-top: -6px;
+    color: #ffffff;
+}
+.form-checkbox-label {
+    margin: 3px;
+    font-size: var(--font-size);
+    font-family: apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color: var(--text-color);
+}
+.form-spoiler-container {
+    display: flex;
+}
+.form-spoiler-divider {
+    width: 96%;
+    margin: 0 2%;
+    height: 2px;
+    border-radius: 1px;
+    background-color: #7e7e7e;
+    justify-self: center;
+    align-self: center;
 }
 .form {
     display: flex;

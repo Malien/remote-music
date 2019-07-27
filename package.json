@@ -6,10 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "electron .",
-    "build": "tsc; echo \"Typescript compilation finished!\n\";mkdir -p dist/app/views; find src/app/views -not -name \"*.ts\" -type f -exec cp -fR {} dist/app/views/ \\;",
+    "build": "(tsc; echo \"Typescript compilation finished!\n\") & npm run restyle",
     "clear": "rm -rf dist",
     "remove-pref-mac": "rm ~/Library/Preferences/remote-music-preference.json",
-    "react-devtools": "react-devtools"
+    "react-devtools": "react-devtools",
+    "restyle": "mkdir -p dist/app/views; find src/app/views ! \\( -name \"*.ts\" -o -name \"*.tsx\" \\) -type f -exec cp -fR {} dist/app/views/ \\;"
   },
   "repository": {
     "type": "git",
@@ -35,6 +36,7 @@
     "@typescript-eslint/parser": "^1.12.0",
     "electron": "^4.2.6",
     "electron-packager": "^13.1.1",
+    "electron-reload": "^1.4.1",
     "eslint": "^5.16.0",
     "eslint-plugin-react": "^7.14.2",
     "react-devtools": "^3.6.1",

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { BrowserWindow, app, ipcMain, Event } from "electron"
+require("electron-reload")(__dirname, {electron: require("./../node_modules/electron")})
 import { platform } from "os"
 
 import pref, {Preferences, PrefConstructorArgs, ClientConfig} from "./shared/preferences"
@@ -19,27 +20,36 @@ async function firstTimeSetup() {
     return new Promise<Preferences>((resolve, reject) => {
         let ftsWin = new BrowserWindow({
             height: 200,
-            width: 400,
+            width: 500,
             //I'm not so sure about resisable false here
-            resizable: false
+            resizable: false,
+            titleBarStyle: "hiddenInset",
+            title:"First time setup",
+            frame: false,
+            fullscreen: false,
+            maximizable: false
+        }).on("blur", () => {
+            ftsWin.webContents.send("window-blur")
+        }).on("focus", () => {
+            ftsWin.webContents.send("window-focus")
+        }).once("ready-to-show", () => {
+            ftsWin.show()
         })
         ftsWin.loadFile("./dist/app/views/first-time-setup.html")
-        ftsWin.show()
-        ftsWin.once("close", () => {
-
-        })
         ipcMain.once("ffs-finish", (event: Event, args: PrefConstructorArgs) => {
             if (ftsWin.webContents == event.sender) {
-                // ftsWin.close()
+                ftsWin.close()
                 resolve(new pref.Preferences(args))
             }
-        })
-        ipcMain.on("ffs-expand", (event: Event, height: number) => {
+        }).on("ffs-initial", (event: Event, height: number) => {
             if (ftsWin.webContents == event.sender) {
-                ftsWin.setContentSize(ftsWin.getContentSize()[1], height, true)
+                ftsWin.setContentSize(500, height, false)
             }
-        })
-        ipcMain.once("ffs-err", (event: Event) => {
+        }).on("ffs-expand", (event: Event, height: number) => {
+            if (ftsWin.webContents == event.sender) {
+                ftsWin.setContentSize(500, height, true)
+            }
+        }).once("ffs-err", (event: Event) => {
             if (ftsWin.webContents == event.sender) reject()
         })
     })
@@ -79,6 +89,9 @@ function clientWin(config: ClientConfig, id: string) {
 }
 
 app.on("ready", async () => {
+    // reload(__dirname, {
+    //     electron
+    // })
     console.log(pref.path)
     if (requireSetup) {
         try {
