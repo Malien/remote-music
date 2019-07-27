@@ -6,7 +6,7 @@ import { ipcRenderer } from "electron"
 import { PrefConstructorArgs, ServerType, ClientConfig, ServerTuple, ClientTuple } from "../../shared/preferences"
 
 import { OkButton, InputField, DoubleInputField, Checkbox, CheckboxSpoiler } from "../components/form"
-import { InsetTitlebarWindow } from "../components/window"
+import { InsetTitlebarWindow, TitlebarWindow } from "../components/window"
 
 function docHeight() {
     // return Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight )

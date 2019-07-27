@@ -5,7 +5,7 @@ interface WindowConstructor {
     title?: string;
 }
 
-export class InsetTitlebarWindow extends React.Component<WindowConstructor, {focused: boolean}> {
+export class TitlebarWindow extends React.Component<WindowConstructor, {focused: boolean}> {
     public constructor(props: WindowConstructor) {
         super(props)
         this.state = {focused: true}
@@ -16,11 +16,25 @@ export class InsetTitlebarWindow extends React.Component<WindowConstructor, {foc
             this.setState({focused: true})
         })
     }
-
+    
     public render() {
         return (
             <>
                 <div className={"window-titlebar" + (this.state.focused ? "" : " window-disabled")}>
+                    {this.props.title}
+                </div>
+                <div className="window-contents">
+                    {this.props.children}
+                </div>
+            </>
+        )
+    }
+}
+export class InsetTitlebarWindow extends TitlebarWindow {
+    public render() {
+        return (
+            <>
+                <div className={"window-inset window-titlebar" + (this.state.focused ? "" : " window-disabled")}>
                     {this.props.title}
                 </div>
                 <div className="window-contents">
