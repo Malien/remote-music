@@ -1,7 +1,7 @@
-import React from "react"
+import React, { FunctionComponent, Children } from "react"
 
-export const List = ({nodes}: {nodes: React.ReactNode[]} = {nodes: []}) => {
-    let liNodes = nodes.map((node) => <li className="layout-list-item">{node}<div className="layout-list-divider"/></li>)
+export const List: FunctionComponent = props => {
+    let liNodes = Children.map(props.children, (node) => <li className="layout-list-item">{node}<div className="layout-list-divider"/></li>)
     return (
         <ul className="layout-list">
             {liNodes}

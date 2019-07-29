@@ -10,7 +10,7 @@
     "clear": "rm -rf dist",
     "remove-pref-mac": "rm ~/Library/Preferences/remote-music-preference.json",
     "react-devtools": "react-devtools",
-    "restyle": "mkdir -p dist/app/views; find src/app/views ! \\( -name \"*.ts\" -o -name \"*.tsx\" \\) -type f -exec cp -fR {} dist/app/views/ \\;"
+    "restyle": "(mkdir -p dist/app/views & mkdir -p dist/app/styles); (cp src/app/styles/ dist/app/styles & find src/app/views ! \\( -name \"*.ts\" -o -name \"*.tsx\" \\) -type f -exec cp -fR {} dist/app/views/ \\;)"
   },
   "repository": {
     "type": "git",
