@@ -121,7 +121,7 @@ class Form extends Component<{}, FormState> {
 
 ReactDOM.render(
     <Form/>,
-    document.getElementById("form")
+    document.getElementById("mount")
 )
 
 ipcRenderer.send("ffs-initial", docHeight())
