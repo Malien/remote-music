@@ -8,3 +8,9 @@ export const List: FunctionComponent = props => {
         </ul>
     )
 }
+
+interface LoadingAreaProps {
+    loaded: boolean;
+}
+
+export const LoadingArea: React.FunctionComponent<LoadingAreaProps> = props => <>{props.loaded ? props.children : <div className="layout-loading"/>}</>

@@ -44,3 +44,34 @@ export class InsetTitlebarWindow extends TitlebarWindow {
         )
     }
 }
+
+interface ToolbarWindowProps extends WindowConstructor{
+    toolbar?: JSX.Element;
+}
+
+export class ToolbarWindow extends React.Component<ToolbarWindowProps, {focused: boolean}> {
+    public constructor(props: ToolbarWindowProps) {
+        super(props)
+        this.state = {focused: true}
+        ipcRenderer.on("window-blur", () => {
+            this.setState({focused: false})
+        })
+        ipcRenderer.on("window-focus", () => {
+            this.setState({focused: true})
+        })
+    }
+
+    public render() {
+        return (
+            <>
+                <div className={"window-titlebar window-toolbar" + (this.state.focused ? "" : " window-disabled")}>
+                    {this.props.title}
+                    {this.props.toolbar}
+                </div>
+                <div className="window-contents">
+                    {this.props.children}
+                </div>
+            </>
+        )
+    }
+}

@@ -2,6 +2,7 @@
     "compilerOptions": {
         "removeComments": true,
         "strictNullChecks": true,
+        "noImplicitAny": false,
         "sourceMap": true,
         "incremental": true,
         "esModuleInterop": true,

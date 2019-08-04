@@ -3,7 +3,7 @@ import ReactDOM from "react-dom"
 import React, { Component } from "react"
 import { ipcRenderer } from "electron"
 
-import { PrefConstructorArgs, ServerType, ClientConfig, ServerTuple, ClientTuple } from "../../shared/preferences"
+import { PrefConstructorArgs, ServerType, ClientConfig, ServerTuple, ClientTuple, PlayerConfig } from "../../shared/preferences"
 
 import { OkButton, InputField, DoubleInputField, Checkbox, CheckboxSpoiler } from "../components/form"
 import { InsetTitlebarWindow, TitlebarWindow } from "../components/window"
@@ -18,6 +18,7 @@ interface FormState {
     address?: string;
     clientPort?: string;
     playerPort?: string;
+    playerName?: string;
     client: boolean;
     server: boolean;
     player: boolean;
@@ -32,7 +33,7 @@ class Form extends Component<{}, FormState> {
     private validate(): boolean {
         return ((!this.state.client) || (this.state.client && Boolean(this.state.address) && Boolean(this.state.clientPort)))
                 && ((!this.state.server) || (this.state.server && Boolean(this.state.clientPort) && Boolean(this.state.playerPort)))
-                && ((!this.state.player) || (this.state.player && Boolean(this.state.address) && Boolean(this.state.playerPort)))
+                && ((!this.state.player) || (this.state.player && Boolean(this.state.address) && Boolean(this.state.playerPort)) && Boolean(this.state.playerName))
                 && (this.state.client || this.state.server || (this.state.client && this.state.player))
     }
 
@@ -75,23 +76,27 @@ class Form extends Component<{}, FormState> {
                         <InputField numeric={true} value={(this.state.playerPort)} label="Player server port" enabled={this.state.player} change={(event)=>{
                             this.setState(Object.assign({}, this.state, {playerPort: event.target.value}))
                         }}/>
+                        <InputField value={this.state.playerName} label="Player name" enabled={this.state.player} change={event => {
+                            this.setState(Object.assign({}, this.state, {playerName: event.target.value}))
+                        }}/>
                     </CheckboxSpoiler>
                     <OkButton label="Continue" click={()=>{
                         let client: ClientTuple | undefined
-                        let player: ClientConfig | undefined
+                        let player: PlayerConfig | undefined
                         let server: ServerTuple | undefined
                         if (this.state.player) {
                             player = {
                                 type: this.state.connectionType,
                                 port: parseInt(this.state.playerPort as string),
-                                address: this.state.address as string
+                                address: this.state.address as string,
+                                name: this.state.playerName as string
                             }
                         }
                         if (this.state.client) {
                             client = {
                                 client: {
                                     type: this.state.connectionType,
-                                    port: parseInt(this.state.playerPort as string),
+                                    port: parseInt(this.state.clientPort as string),
                                     address: this.state.address as string
                                 },
                                 player

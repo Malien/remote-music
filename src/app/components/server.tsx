@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React from "react"
 import { Song } from "../../shared/components"
 
 export const noArtwork = ""
 
-interface PlayerStatsProps {
+export interface PlayerStatsProps {
     name: string;
     song?: Song;
 }

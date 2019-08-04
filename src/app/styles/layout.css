@@ -1,0 +1,12 @@
+.layout-list {
+
+}
+.layout-list-item {
+
+}
+.layout-list-divider {
+    width: 80%;
+    height: 4px;
+    border-radius: 2px;
+    background-color: #ccc;
+}

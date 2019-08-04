@@ -1,20 +1,20 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { BrowserWindow, app, ipcMain, Event } from "electron"
 require("electron-reload")(__dirname, {electron: require("./../node_modules/electron")})
 import { platform } from "os"
 
-import pref, {Preferences, PrefConstructorArgs, ClientConfig} from "./shared/preferences"
+import pref, {Preferences, PrefConstructorArgs, ClientConfig, PlayerConfig} from "./shared/preferences"
 import { PlayerServer, ClientServer } from "./core/server/server"
 import { interconnectFrom } from "./core/server/util"
 
-// let requireSetup = !pref.canBeMerged(pref.path)
-let requireSetup = true
+let requireSetup = !pref.canBeMerged(pref.path)
 
 let player: PlayerServer
 let client: ClientServer
 
 let preferences: Preferences
+
+let selection: BrowserWindow
 
 async function firstTimeSetup() {
     return new Promise<Preferences>((resolve, reject) => {
@@ -58,17 +58,21 @@ async function firstTimeSetup() {
 function selectionMenu(config: ClientConfig, onSelection: (id: string) => void) {
     let selectionWin = new BrowserWindow({
         height: 500,
-        width: 300
+        width: 300,
+        webPreferences: {
+            devTools: true
+        }
     })
     selectionWin.loadFile("./dist/app/views/selection.html")
-    selectionWin.webContents.send("config", config)
+    selectionWin.webContents.on("dom-ready", () => {selectionWin.webContents.send("config", config)})
     selectionWin.show()
     ipcMain.on("selection-select", (event: Event, id: string) => {
         onSelection(id)
     })
+    return selectionWin
 }
 
-function playerWindow(config: ClientConfig) {
+function playerWindow(config: PlayerConfig) {
     let playerWin = new BrowserWindow({
         height: 600,
         width: 400
@@ -76,6 +80,7 @@ function playerWindow(config: ClientConfig) {
     playerWin.loadFile("./dist/app/views/player.html")
     playerWin.webContents.send("config", config)
     playerWin.show()
+    return playerWin
 }
 
 function clientWin(config: ClientConfig, id: string) {
@@ -86,12 +91,10 @@ function clientWin(config: ClientConfig, id: string) {
     playerWin.loadFile("./dist/app/views/client.html")
     playerWin.webContents.send("config", config, id)
     playerWin.show()
+    return clientWin
 }
 
 app.on("ready", async () => {
-    // reload(__dirname, {
-    //     electron
-    // })
     console.log(pref.path)
     if (requireSetup) {
         try {
@@ -110,11 +113,16 @@ app.on("ready", async () => {
         ({client, player} = interconnectFrom(preferences.server))
     }
     if (typeof(preferences.client) != "undefined") {
-        selectionMenu(preferences.client.client, (id) => {
+        selection = selectionMenu(preferences.client.client, (id) => {
             clientWin(preferences.client.client, id)
         })
         if (typeof(preferences.client.player) != "undefined") {
-            playerWindow(preferences.client.player)
+            let playerWin = playerWindow(preferences.client.player)
+            ipcMain.on("player-register", (event: Event, id: string) => {
+                if (event.sender == playerWin.webContents) {
+                    selection.webContents.send("player-register", id)
+                }
+            })
         }
     }
 })

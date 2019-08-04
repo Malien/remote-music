@@ -36,7 +36,11 @@ export class Preferences {
 
 export interface ClientTuple {
     client: ClientConfig;
-    player?: ClientConfig;
+    player?: PlayerConfig;
+}
+
+export interface PlayerConfig extends ClientConfig {
+    name: string;
 }
 
 export interface ClientConfig {
