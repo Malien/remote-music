@@ -66,6 +66,6 @@ export interface Song {
     artist: string;
     album: string;
     length: number;
-    artwork?: URL | string;
+    artwork?: string;
     metadata?: any;
 }
