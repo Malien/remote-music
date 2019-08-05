@@ -8,7 +8,7 @@ import { PlayerStatus } from "../../shared/components"
 
 import { List, LoadingArea } from "../components/layout"
 import { PlayerStats, PlayerStatsProps } from "../components/server"
-import { ToolbarWindow } from "../components/window";
+import { ToolbarWindow } from "../components/window"
 
 function strChecksum(str: string): number {
     let s = 0

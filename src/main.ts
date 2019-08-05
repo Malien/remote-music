@@ -15,6 +15,8 @@ let client: ClientServer
 let preferences: Preferences
 
 let selection: BrowserWindow
+let playerId: string | undefined
+let playerWin: BrowserWindow | undefined
 
 async function firstTimeSetup() {
     return new Promise<Preferences>((resolve, reject) => {
@@ -109,16 +111,25 @@ app.on("ready", async () => {
         preferences = pref.read(pref.path)
     }
     console.log(preferences)
+    //Server creation
     if (typeof(preferences.server) != "undefined") {
         ({client, player} = interconnectFrom(preferences.server))
     }
+    //Selection menu creation
     if (typeof(preferences.client) != "undefined") {
         selection = selectionMenu(preferences.client.client, (id) => {
-            clientWin(preferences.client.client, id)
+            //Client creation
+            if (preferences.client.player && id == playerId) {
+                if (playerWin) playerWin.show()
+                else playerWin = playerWindow(preferences.client.player)
+            }
+            else clientWin(preferences.client.client, id)
         })
+        //Player creation
         if (typeof(preferences.client.player) != "undefined") {
             let playerWin = playerWindow(preferences.client.player)
             ipcMain.on("player-register", (event: Event, id: string) => {
+                playerId = id
                 if (event.sender == playerWin.webContents) {
                     selection.webContents.send("player-register", id)
                 }
