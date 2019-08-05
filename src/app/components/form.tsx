@@ -1,5 +1,4 @@
 import React from "react"
-
 interface ButtonConstructionArgs {
     label?: string;
     enabled?: boolean;
@@ -8,8 +7,10 @@ interface ButtonConstructionArgs {
 
 export const Button = ({label, click, enabled=true}: ButtonConstructionArgs) => 
     <button className="form-button" disabled={!enabled} onClick={click}>{label}</button>
+Button.displayName = "Button"
 export const OkButton = ({label, click, enabled=true}: ButtonConstructionArgs) => 
     <button className="form-button form-ok" disabled={!enabled} onClick={click}>{label}</button>
+OkButton.displayName = "OkButton"
 
 interface InputFieldProps {
     label?: string;
@@ -34,6 +35,7 @@ export const InputField = ({label, placeholder, change, value, numeric, enabled}
             value={value}
         />
     </>
+InputField.displayName = "InputField"
 
 interface DoubleInputFieldProps {
     nextPlaceholder?: string;
@@ -57,38 +59,34 @@ export class DoubleInputField extends React.Component<DoubleInputFieldProps> {
         super(props)
     }
 
-    public render() {
-        return (
-            <>
-                <label className={"form-field-label" + (this.props.disabled ? " form-disabled" : "")} htmlFor={this.id}>{this.props.label}</label>
-                <div className="form-double-container">
-                    <input 
-                        disabled={this.props.disabled}
-                        name={this.id}
-                        className="form-field form-double-1" 
-                        type={this.props.numeric ? "number" : "text"} 
-                        placeholder={this.props.placeholder} 
-                        onChange={(event)=> {
-                            this.val1 = event.target.value
-                            this.props.change(this.val1, this.val2)
-                        }}
-                        value={this.props.value}
-                    />
-                    <input
-                        disabled={this.props.disabled}
-                        className="form-field form-double-2"
-                        type={this.props.nextNumeric ? "number" : "text"} 
-                        placeholder={this.props.nextPlaceholder} 
-                        onChange={(event)=> {
-                            this.val2 = event.target.value
-                            this.props.change(this.val1, this.val2)
-                        }}
-                        value={this.props.nextValue}
-                    />
-                </div>
-            </>
-        )
-    }
+    public render = () => <>
+        <label className={"form-field-label" + (this.props.disabled ? " form-disabled" : "")} htmlFor={this.id}>{this.props.label}</label>
+        <div className="form-double-container">
+            <input 
+                disabled={this.props.disabled}
+                name={this.id}
+                className="form-field form-double-1" 
+                type={this.props.numeric ? "number" : "text"} 
+                placeholder={this.props.placeholder} 
+                onChange={(event)=> {
+                    this.val1 = event.target.value
+                    this.props.change(this.val1, this.val2)
+                }}
+                value={this.props.value}
+            />
+            <input
+                disabled={this.props.disabled}
+                className="form-field form-double-2"
+                type={this.props.nextNumeric ? "number" : "text"} 
+                placeholder={this.props.nextPlaceholder} 
+                onChange={(event)=> {
+                    this.val2 = event.target.value
+                    this.props.change(this.val1, this.val2)
+                }}
+                value={this.props.nextValue}
+            />
+        </div>
+    </>
 }
 
 interface CheckboxProps {
@@ -105,24 +103,12 @@ export const Checkbox = ({label, value, check, disabled, checked}: CheckboxProps
         <input type="checkbox" className="form-checkbox" id={"form-checkbox-" + ++checkboxCount} value={value} disabled={disabled} checked={checked} onChange={check}/>
         <label className="form-checkbox-label" htmlFor={"form-checkbox-" + checkboxCount}>{label}</label>
     </>
+Checkbox.displayName = "Checkbox"
 
-export class CheckboxSpoiler extends React.Component<CheckboxProps, {shown: boolean}> {
-    public constructor(props: CheckboxProps) {
-        super(props)
-        this.state = {shown: props.checked}
-    }
-
-    public render() {
-        return (
-            <>
-                <Checkbox label={this.props.label} disabled={this.props.disabled} checked={this.props.checked} value={this.props.value} check={(event)=>{
-                    this.setState({shown: event.target.checked})
-                    this.props.check(event)}}/>
-                <div className="form-spoiler-divider"/>
-                <div className={"form-spoiler" + ((this.state.shown) ? " form-shown" : " form-hidden")}>
-                    {this.props.children}
-                </div>
-            </>
-        )
-    }
-}
+export const CheckboxSpoiler: React.FunctionComponent<CheckboxProps> = props => <>
+    <Checkbox label={props.label} disabled={props.disabled} checked={props.checked} value={props.value} check={props.check}/>
+    <div className="form-spoiler-divider"/>
+    <div className={"form-spoiler" + ((props.checked) ? " form-shown" : " form-hidden")}>
+        {props.children}
+    </div>
+</>

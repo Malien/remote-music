@@ -1,16 +1,18 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React from "react"
+import React, { FunctionComponent } from "react"
 import { Song } from "../../shared/components"
 
+//TODO: Provide artwork
 export const noArtwork = ""
 
 export interface PlayerStatsProps {
     name: string;
     song?: Song;
+    click?: (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => void;
 }
 
-export const PlayerStats = (props: PlayerStatsProps) => 
-    <div className="server-player">
+export const PlayerStats: FunctionComponent<PlayerStatsProps> = props => 
+    <a className="server-player" onClick={props.click}>
         <img 
             src={(props.song && props.song.artwork) ? props.song.artwork.toString(): noArtwork}
             className="server-player-artwork"
@@ -23,4 +25,5 @@ export const PlayerStats = (props: PlayerStatsProps) =>
         <svg className="server-player-arrow">
             <path d="M0 1 L1 0 L0 -1 Z"/>
         </svg>
-    </div> 
+    </a> 
+PlayerStats.displayName = "PlayerStats"

@@ -95,7 +95,8 @@ class PlayerDisplay extends React.Component<PlayerDisplayProps, PlayerDisplaySta
     public render() {
         let items: JSX.Element[] = []
         if (this.state.players) {
-            items = this.state.players.map(player => <PlayerStats name={player.name} song={player.status.current}/>)
+            items = this.state.players.map(player => 
+                <PlayerStats name={player.name} song={player.status.current} click={event => {ipcRenderer.send("selection-select", player.id)}}/>)
         }
         return (
             <LoadingArea loaded={Boolean(this.state.players)}>
