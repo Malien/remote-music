@@ -9,6 +9,7 @@ import { PlayerStatus } from "../../shared/components"
 import { List, LoadingArea } from "../components/layout"
 import { PlayerStats, PlayerStatsProps } from "../components/server"
 import { ToolbarWindow } from "../components/window"
+import { ClientServerResponse } from "./comms"
 
 function strChecksum(str: string): number {
     let s = 0
@@ -68,7 +69,7 @@ class PlayerDisplay extends React.Component<PlayerDisplayProps, PlayerDisplaySta
         this.ws.onmessage = ev => {
             let state: PlayerDisplayState
             let playerCount = 0
-            let res = JSON.parse(String(ev.data))
+            let res = JSON.parse(String(ev.data)) as ClientServerResponse
             if (res.type == "players") {
                 state = Object.assign({}, _this.state)
                 if (!state.players) {
@@ -85,7 +86,8 @@ class PlayerDisplay extends React.Component<PlayerDisplayProps, PlayerDisplaySta
             else if (res.type == "playerStatus") {
                 let players = _this.playerList
                 if (_this.props.player && res.payload.id == _this.props.player.id) {
-                    _this.props.player.update({name: res.payload.id, song: res.payload.current})
+                    _this.props.player.update({name: res.payload.name, song: res.payload.current})
+                    playerCount--
                 } else players.push(res.payload)
                 if (playerCount <= _this.playerList.length && !_this.cmp(players)) _this.setState({players})
             }

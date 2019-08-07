@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { FunctionComponent } from "react"
 
 import { PlayerStatus, Song } from "../../shared/components"
 import { noArtwork } from "./server"
-import { List } from "./layout";
+import { List } from "./layout"
 
 export const Player: FunctionComponent<PlayerStatus & ControlsDelegate> = props => 
     <div className="player-container">

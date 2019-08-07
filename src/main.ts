@@ -80,7 +80,7 @@ function playerWindow(config: PlayerConfig) {
         width: 400
     })
     playerWin.loadFile("./dist/app/views/player.html")
-    playerWin.webContents.send("config", config)
+    playerWin.webContents.on("dom-ready", () => {playerWin.webContents.send("config", config)})
     playerWin.show()
     return playerWin
 }

@@ -5,6 +5,17 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "chrome",
+            "request": "launch",
+            "name": "Chrome Run",
+            "runtimeExecutable":"${workspaceFolder}/node_modules/.bin/electron",
+            "runtimeArgs": [
+                "${workspaceRoot}/dist/main.js",
+                "--remote-debugging-port=9222"
+            ],
+            "webRoot": "${workspaceFolder}/dist/app/views"
+        },
+        {
             "type": "node",
             "request": "launch",
             "name": "Main Run",
