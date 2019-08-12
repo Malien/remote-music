@@ -3,7 +3,7 @@ import React, { FunctionComponent } from "react"
 import { Song } from "../../shared/components"
 
 //TODO: Provide artwork
-export const noArtwork = ""
+export const noArtwork = "../../../assets/SVG/no-artwork.svg"
 
 export interface PlayerStatsProps {
     name: string;
