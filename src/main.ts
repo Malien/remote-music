@@ -61,9 +61,14 @@ function selectionMenu(config: ClientConfig, onSelection: (id: string) => void) 
     let selectionWin = new BrowserWindow({
         height: 500,
         width: 300,
-        webPreferences: {
-            devTools: true
-        }
+        frame: false,
+        titleBarStyle: "hidden",
+        minHeight: 110,
+        minWidth: 200,
+    }).on("blur", () => {
+        selectionWin.webContents.send("window-blur")
+    }).on("focus", () => {
+        selectionWin.webContents.send("window-focus")
     })
     selectionWin.loadFile("./dist/app/views/selection.html")
     selectionWin.webContents.on("dom-ready", () => {selectionWin.webContents.send("config", config)})

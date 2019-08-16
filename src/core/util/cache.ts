@@ -13,12 +13,15 @@ export class Cache<T> {
     public defaultTTL: number
     public get changeEmitter(): EventEmitter { return this.map }
 
-    public constructor(defaultTTL = 500) {
+    //FIXME: THIS SHIT IS BROKEN ON SO MANY 
+    //       LEVELS I CAN'T EVEN IMAGINE
+    public constructor(defaultTTL = 50) {
         this.defaultTTL = defaultTTL
     }
 
     public get(key: string): T | undefined {
-        return (this.map.get(key) as ExistentialContainer<T>).value
+        let v = this.map.get(key)
+        return (v ? v.value : undefined)
     }
     public set(key: string, value: T, ttl = this.defaultTTL): void {
         this.invalidationCount++
@@ -26,8 +29,8 @@ export class Cache<T> {
         this.map.set(key, { value, invalidationToken })
         setTimeout(()=> {
             this.changeEmitter.emit("pre-invalidation", key)
-            let container = this.map.get(key) as ExistentialContainer<T>
-            if (container.invalidationToken == invalidationToken) this.invalidate(key)
+            let container = this.map.get(key)
+            if (container && container.invalidationToken == invalidationToken) this.invalidate(key)
         }, ttl*1000)
     }
     public notify = this.map.commit.bind(this.map)

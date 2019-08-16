@@ -7,8 +7,8 @@ import { ClientConfig } from "../../shared/preferences"
 import { PlayerStatus } from "../../shared/components"
 
 import { List, LoadingArea } from "../components/layout"
-import { PlayerStats, PlayerStatsProps } from "../components/server"
-import { ToolbarWindow } from "../components/window"
+import { PlayerStats, PlayerStatsProps, CompactPlayerStats } from "../components/server"
+import { ToolbarWindow, windowResize } from "../components/window"
 import { ClientServerResponse } from "./comms"
 
 function strChecksum(str: string): number {
@@ -38,7 +38,7 @@ interface PlayerDisplayState {
 
 interface PlayerUpdater {
     id: string; 
-    update(props: PlayerStatsProps): void;
+    update(props?: PlayerStatsProps): void;
 }
 
 interface PlayerDisplayProps {
@@ -85,11 +85,22 @@ class PlayerDisplay extends React.Component<PlayerDisplayProps, PlayerDisplaySta
             }
             else if (res.type == "playerStatus") {
                 let players = _this.playerList
-                if (_this.props.player && res.payload.id == _this.props.player.id) {
-                    _this.props.player.update({name: res.payload.name, song: res.payload.current})
-                    playerCount--
-                } else players.push(res.payload)
-                if (playerCount <= _this.playerList.length && !_this.cmp(players)) _this.setState({players})
+                players.push(res.payload)
+                if (playerCount <= _this.playerList.length && !_this.cmp(players)) {
+                    let found = false
+                    players = players.filter(player => {
+                        if (_this.props.player && player.id == _this.props.player.id) {
+                            _this.props.player.update(player)
+                            found = true
+                            return false
+                        }
+                        return true
+                    })
+                    if (!found && _this.props.player) {
+                        _this.props.player.update() 
+                    }
+                    _this.setState({players})
+                }
             }
         }
     }
@@ -98,7 +109,7 @@ class PlayerDisplay extends React.Component<PlayerDisplayProps, PlayerDisplaySta
         let items: JSX.Element[] = []
         if (this.state.players) {
             items = this.state.players.map(player => 
-                <PlayerStats name={player.name} song={player.status.current} click={event => {ipcRenderer.send("selection-select", player.id)}}/>)
+                <CompactPlayerStats name={player.name} song={player.status.current} click={event => {ipcRenderer.send("selection-select", player.id)}}/>)
         }
         return (
             <LoadingArea loaded={Boolean(this.state.players)}>
@@ -139,18 +150,21 @@ class SelectionApp extends React.Component<{}, {player?: string; viewProps?: Pla
     }
 
     public render = () => 
-        <ToolbarWindow toolbar={
+        <ToolbarWindow title="Selection" toolbar={
             this.state.player && this.state.viewProps
-                ? <PlayerStats name={this.state.viewProps.name} song={this.state.viewProps.song}/> 
+                ? <PlayerStats name={this.state.viewProps.name} song={this.state.viewProps.song} touch={true}/>
                 : undefined}>
             <Loader updater={
                 this.state.player 
                     ? {id: this.state.player, update: this.update} 
                     : undefined}/>
         </ToolbarWindow>
+
 }
 
 ReactDOM.render(
     <SelectionApp/>,
     document.getElementById("mount")
 )
+
+window.addEventListener("resize", windowResize)
