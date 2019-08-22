@@ -23,6 +23,11 @@ body {
     left: 0;
 }
 
+.window-transparent {
+    background: none;
+    border: none;
+}
+
 .window-inset {
     height: 40px;
     font-size: 16px;
@@ -36,7 +41,7 @@ body {
 }
 
 #window-contents {
-    margin: 8px 8px 0px 8px;
+    /* margin: 8px 8px 0px 8px; */
     overflow: scroll;
 }
 

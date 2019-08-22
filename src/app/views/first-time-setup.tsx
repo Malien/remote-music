@@ -6,7 +6,7 @@ import { ipcRenderer } from "electron"
 import { PrefConstructorArgs, ServerType, ClientConfig, ServerTuple, ClientTuple, PlayerConfig } from "../../shared/preferences"
 
 import { OkButton, InputField, DoubleInputField, Checkbox, CheckboxSpoiler } from "../components/form"
-import { InsetTitlebarWindow, TitlebarWindow } from "../components/window"
+import { InsetTitlebar, Titlebar } from "../components/window"
 
 function docHeight() {
     // return Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight )
@@ -39,7 +39,7 @@ class Form extends Component<{}, FormState> {
 
     public render() {
         return (
-            <InsetTitlebarWindow title="First time setup">
+            <InsetTitlebar title="First time setup">
                 <div className="form">
                     <DoubleInputField 
                         label="Server address" 
@@ -119,7 +119,7 @@ class Form extends Component<{}, FormState> {
                     }} enabled={this.validate()}/>
                     <div style={{"height":"50px"}} />
                 </div>
-            </InsetTitlebarWindow>
+            </InsetTitlebar>
         )
     }
 }

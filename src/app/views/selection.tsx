@@ -8,7 +8,7 @@ import { PlayerStatus } from "../../shared/components"
 
 import { List, LoadingArea } from "../components/layout"
 import { PlayerStats, PlayerStatsProps, CompactPlayerStats } from "../components/server"
-import { ToolbarWindow, windowResize } from "../components/window"
+import { Toolbar, windowResize } from "../components/window"
 import { ClientServerResponse } from "./comms"
 
 function strChecksum(str: string): number {
@@ -111,13 +111,13 @@ class PlayerDisplay extends React.Component<PlayerDisplayProps, PlayerDisplaySta
             items = this.state.players.map(player => 
                 <CompactPlayerStats name={player.name} song={player.status.current} click={event => {ipcRenderer.send("selection-select", player.id)}}/>)
         }
-        return (
+        return <div className="selection-margin">
             <LoadingArea loaded={Boolean(this.state.players)}>
                 {(this.state.players && this.state.players.length != 0) 
                     ? <List>{items}</List> 
                     : <span className="selection-noplayers">No players are connected to the server</span>}
             </LoadingArea>
-        )
+        </div>
     }
 }
 
@@ -150,7 +150,7 @@ class SelectionApp extends React.Component<{}, {player?: string; viewProps?: Pla
     }
 
     public render = () => 
-        <ToolbarWindow title="Selection" toolbar={
+        <Toolbar title="Selection" toolbar={
             this.state.player && this.state.viewProps
                 ? <PlayerStats name={this.state.viewProps.name} song={this.state.viewProps.song} touch={true}/>
                 : undefined}>
@@ -158,7 +158,7 @@ class SelectionApp extends React.Component<{}, {player?: string; viewProps?: Pla
                 this.state.player 
                     ? {id: this.state.player, update: this.update} 
                     : undefined}/>
-        </ToolbarWindow>
+        </Toolbar>
 
 }
 

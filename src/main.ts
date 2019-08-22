@@ -82,7 +82,9 @@ function selectionMenu(config: ClientConfig, onSelection: (id: string) => void) 
 function playerWindow(config: PlayerConfig) {
     let playerWin = new BrowserWindow({
         height: 600,
-        width: 400
+        width: 350,
+        frame: false,
+        titleBarStyle: "hidden"
     })
     playerWin.loadFile("./dist/app/views/player.html")
     playerWin.webContents.on("dom-ready", () => {playerWin.webContents.send("config", config)})
@@ -93,7 +95,7 @@ function playerWindow(config: PlayerConfig) {
 function clientWin(config: ClientConfig, id: string) {
     let playerWin = new BrowserWindow({
         height: 600,
-        width: 400
+        width: 350
     })
     playerWin.loadFile("./dist/app/views/client.html")
     playerWin.webContents.send("config", config, id)

@@ -2,10 +2,10 @@
 import React from "react"
 import ReactDOM from "react-dom"
 
-import { PlayerStatus } from "../../shared/components"
+import { PlayerStatus, Song } from "../../shared/components"
 import { PlayerConfig } from "../../shared/preferences"
 
-import {  } from "../components/window"
+import { TransparentTitlebar } from "../components/window"
 import { Player } from "../components/player"
 import { ipcRenderer } from "electron"
 import { PlayerServerRequest } from "./comms"
@@ -14,10 +14,17 @@ class PlayerApp extends React.Component<PlayerConfig, PlayerStatus> {
     private ws: WebSocket
     private id?: string
     private interval: number
+    private song: Song = {
+        title: "Jumpsuit", 
+        album:"Trench", 
+        artist:"twenty one pilots", 
+        artwork:"/Users/yaroslav/Downloads/twenty one pilots - Trench (2018) [ALAC]/cover.jpg", 
+        length:239
+    }
 
     public constructor(props: PlayerConfig) {
         super(props)
-        this.state = {progress: 0, playing: false, queue: []}
+        this.state = {current: this.song, progress: 100, playing: false, queue: []}
         this.ws = new WebSocket(props.address + ":" + props.port)
         this.ws.onopen = (() => {
             this.ws.send(JSON.stringify({type:"register", payload:props.name}))
@@ -51,7 +58,24 @@ class PlayerApp extends React.Component<PlayerConfig, PlayerStatus> {
         }
     }
 
-    public render = () => <Player current={this.state.current} progress={this.state.progress} playing={this.state.playing} queue={this.state.queue}/>
+    // public render = () => <Player current={this.state.current} progress={this.state.progress} playing={this.state.playing} queue={this.state.queue}/>
+    public render = () => {
+        let title = this.props.name
+        if (this.state.current) {
+            title += `: ${this.state.playing ? "playing" : "paused"} ${this.state.current.title}`
+        }
+        return <TransparentTitlebar title={title}>
+            <Player 
+                current={this.state.current} 
+                progress={this.state.progress} 
+                playing={this.state.playing} 
+                queue={this.state.queue}
+                onScrub={progress => {
+                    if (this.state.current)
+                        this.setState(Object.assign({}, this.state, {progress}))
+                }}/>
+        </TransparentTitlebar>
+    }
 }
 
 ipcRenderer.once("config", (event, config: PlayerConfig) => {

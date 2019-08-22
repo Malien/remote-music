@@ -1,12 +1,12 @@
-import React from "react"
+import React, { FunctionComponent } from "react"
 import { ipcRenderer } from "electron"
 
-interface WindowConstructor {
+interface BarConstructor {
     title?: string;
 }
 
-export class TitlebarWindow extends React.Component<WindowConstructor, {focused: boolean}> {
-    public constructor(props: WindowConstructor) {
+export class Titlebar extends React.Component<BarConstructor, {focused: boolean}> {
+    public constructor(props: BarConstructor) {
         super(props)
         this.state = {focused: true}
         ipcRenderer.on("window-blur", () => {
@@ -30,7 +30,7 @@ export class TitlebarWindow extends React.Component<WindowConstructor, {focused:
         )
     }
 }
-export class InsetTitlebarWindow extends TitlebarWindow {
+export class InsetTitlebar extends Titlebar {
     public render() {
         return (
             <>
@@ -45,11 +45,11 @@ export class InsetTitlebarWindow extends TitlebarWindow {
     }
 }
 
-interface ToolbarWindowProps extends WindowConstructor{
+interface ToolbarWindowProps extends BarConstructor{
     toolbar?: JSX.Element;
 }
 
-export class ToolbarWindow extends React.Component<ToolbarWindowProps, {focused: boolean; barHeight?: number}> {
+export class Toolbar extends React.Component<ToolbarWindowProps, {focused: boolean; barHeight?: number}> {
     public constructor(props: ToolbarWindowProps) {
         super(props)
         this.state = {focused: true}
@@ -84,6 +84,17 @@ export class ToolbarWindow extends React.Component<ToolbarWindowProps, {focused:
         }, 2000)
     }
 }
+
+export const TransparentTitlebar: FunctionComponent<BarConstructor> = props => 
+    <>
+        <div className={"window-titlebar window-transparent"}>
+            {props.title}
+        </div>
+        <div id="window-contents">
+            {props.children}
+        </div>
+    </>
+TransparentTitlebar.displayName = "TransparentTitlebar"
 
 export function windowResize() {
     console.log("resize")

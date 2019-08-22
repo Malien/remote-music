@@ -45,6 +45,9 @@ module.exports = {
 		"no-console": [
 			"warn"
 		],
+		"no-empty": [
+			"warn"
+		],
 		"@typescript-eslint/no-explicit-any": [
 			"off"
 		],

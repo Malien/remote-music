@@ -1,0 +1,75 @@
+.player-container {
+    display: flex;
+    flex-direction: column;
+}
+.player-display {
+    color: #464646;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+.player-display-background {
+    position: absolute;
+    top: calc(51px - 2.5vw);
+    width: 70%;
+    filter: blur(20px) saturate(1);
+    opacity: 0.5;
+    user-select: none;
+    z-index: -1;
+}
+.player-display-artwork {
+    width: 65%;
+    margin-top: 30px;
+    margin-bottom: 20px;
+    border-radius: 15px;
+}
+.player-display-title {
+    font-weight: 400;
+    font-size: 28px;
+}
+.player-display-subtitle {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+.player-queue-title {}
+.player-song-container {}
+.player-song-img {}
+.player-slider {
+    --val: 0;
+    width: 80%;
+    height: 10px;
+    background-color: #ccc;
+    border-radius: 5px;
+    margin: 10px;
+}
+.player-slider-fill {
+    height: 100%;
+    width: calc(var(--val) * 100%);
+    background-color: #F41EB2;
+    border-radius: 5px;
+}
+.player-slider-dot {
+    position: absolute;
+    height: 16px;
+    width: 16px;
+    border-radius: 10px;
+    left: calc(16px + 10% + var(--val) * (80% - 16px));
+    margin: -16px;
+    border: solid 2px #ccc;
+    background-color: white;
+    cursor: grab;
+}
+.player-slider-dot:active {
+    cursor: grabbing;
+}
+.player-media-controls {
+    display: flex;
+}
+.player-media-button {
+    width: 75px;
+    height: 75px;
+    margin: 15px;
+    user-select: none;
+}
