@@ -12,7 +12,7 @@ export const Player: FunctionComponent<PlayerStatus & ControlsDelegate & SliderD
             <img className="player-display-artwork" src={props.current ? (props.current.artwork || noArtwork) : noArtwork} />
             <span className="player-display-title">{props.current ? props.current.title : "No song"}</span>
             <span className="player-display-subtitle">{props.current ? (props.current.artist + " ‒ " + props.current.album) : ""}</span>
-            <Slider onScrub={props.onScrub} min={0} max={props.current ? props.current.length : 0} val={props.progress}/>
+            <Slider onScrub={props.onScrub} timestamp={true} min={0} max={props.current ? props.current.length : 0} val={props.progress}/>
             <MediaControls onPlay={props.onPlay} onNext={props.onNext} onPrev={props.onNext} playing={props.playing}></MediaControls>
         </div>
         <SongQueue songs={props.queue}></SongQueue>
@@ -55,6 +55,8 @@ interface SliderProps {
     min: number;
     max: number;
     val: number;
+    timestamp?: boolean;
+    disabled?: boolean;
 }
 
 interface SliderDelegate {
@@ -64,6 +66,7 @@ interface SliderDelegate {
 export class Slider extends Component<SliderProps & SliderDelegate, {per: number}> {
     private dotRef: RefObject<HTMLDivElement>
     private contRef: RefObject<HTMLDivElement>
+    private timeRef: RefObject<HTMLSpanElement>
 
     private innerPer: number
 
@@ -71,12 +74,14 @@ export class Slider extends Component<SliderProps & SliderDelegate, {per: number
         super(props)
         this.dotRef = React.createRef()
         this.contRef = React.createRef()
+        this.timeRef = React.createRef()
         this.state = {per: (this.props.val - this.props.min) / (this.props.max - this.props.min)}
     }
 
     public componentDidMount() {
         let dot = this.dotRef.current
         let cont = this.contRef.current
+        let time = this.timeRef.current
         if (dot && cont) {
             cont.style.setProperty("--val", String(this.state.per))
             let _this = this
@@ -91,6 +96,8 @@ export class Slider extends Component<SliderProps & SliderDelegate, {per: number
                         else if (x > left + width) _this.innerPer = 1
                         else _this.innerPer = (x - left) / width
                         cont.style.setProperty("--val", String(_this.innerPer))
+                        let v = _this.innerPer * _this.props.max + _this.props.min
+                        if (time) time.innerText = _this.props.disabled ? "--:--" : `${Math.floor(v / 60)}:${Math.floor(v % 60)}`
                     }
                 }
                 document.addEventListener("mousemove", move)
@@ -116,5 +123,9 @@ export class Slider extends Component<SliderProps & SliderDelegate, {per: number
         <div className="player-slider" ref={this.contRef}>
             <div className="player-slider-fill"/>
             <div className="player-slider-dot" ref={this.dotRef}/>
+            {this.props.timestamp && <>
+                <span className="player-slider-left player-slider-time" ref={this.timeRef}>{this.props.disabled ? "--:--" : `${Math.floor(this.props.val / 60)}:${Math.floor(this.props.val % 60)}`}</span>
+                <span className="player-slider-right player-slider-time">{this.props.disabled ? "--:--" : `${Math.floor(this.props.max / 60)}:${Math.floor(this.props.max % 60)}`}</span>
+            </>}
         </div>
 }
