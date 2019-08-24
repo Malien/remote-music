@@ -24,8 +24,10 @@ body {
 }
 
 .window-transparent {
-    background: none;
+    background-color: #ffffff55;
     border: none;
+    -webkit-backdrop-filter: blur(40px) brightness(1) saturate(1);
+    backdrop-filter: blur(40px) brightness(1) saturate(1);
 }
 
 .window-inset {
@@ -40,9 +42,18 @@ body {
     color: #afafaf;
 }
 
+.window-transparent.window-disabled {
+    background: none;
+    background-color: #ffffff88;
+}
+
 #window-contents {
     /* margin: 8px 8px 0px 8px; */
     overflow: scroll;
+}
+
+.window-passthrough {
+    margin-top: -25px;
 }
 
 .window-toolbar {

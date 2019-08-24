@@ -5,7 +5,7 @@ import ReactDOM from "react-dom"
 import { PlayerStatus, Song } from "../../shared/components"
 import { PlayerConfig } from "../../shared/preferences"
 
-import { TransparentTitlebar } from "../components/window"
+import { TransparentTitlebar, windowResize } from "../components/window"
 import { Player } from "../components/player"
 import { ipcRenderer } from "electron"
 import { PlayerServerRequest } from "./comms"
@@ -14,17 +14,17 @@ class PlayerApp extends React.Component<PlayerConfig, PlayerStatus> {
     private ws: WebSocket
     private id?: string
     private interval: number
-    private song: Song = {
-        title: "Jumpsuit", 
-        album:"Trench", 
-        artist:"twenty one pilots", 
-        artwork:"/Users/yaroslav/Downloads/twenty one pilots - Trench (2018) [ALAC]/cover.jpg", 
-        length:239
-    }
 
     public constructor(props: PlayerConfig) {
         super(props)
-        this.state = {current: this.song, progress: 100, playing: false, queue: []}
+        let song: Song = {
+            title: "Jumpsuit", 
+            album:"Trench", 
+            artist:"twenty one pilots", 
+            artwork:"/Users/yaroslav/Downloads/twenty one pilots - Trench (2018) [ALAC]/cover.jpg", 
+            length:239
+        }
+        this.state = {current: song, progress: 100, playing: false, queue: [song, song, song, song, song]}
         this.ws = new WebSocket(props.address + ":" + props.port)
         this.ws.onopen = (() => {
             this.ws.send(JSON.stringify({type:"register", payload:props.name}))
@@ -86,3 +86,5 @@ ipcRenderer.once("config", (event, config: PlayerConfig) => {
         ,document.getElementById("mount")
     )
 })
+
+window.addEventListener("resize", windowResize)

@@ -84,7 +84,14 @@ function playerWindow(config: PlayerConfig) {
         height: 600,
         width: 350,
         frame: false,
-        titleBarStyle: "hidden"
+        titleBarStyle: "hidden",
+        webPreferences: {
+            experimentalFeatures: true
+        }
+    }).on("blur", () => {
+        playerWin.webContents.send("window-blur")
+    }).on("focus", () => {
+        playerWin.webContents.send("window-focus")
     })
     playerWin.loadFile("./dist/app/views/player.html")
     playerWin.webContents.on("dom-ready", () => {playerWin.webContents.send("config", config)})
@@ -104,6 +111,13 @@ function clientWin(config: ClientConfig, id: string) {
 }
 
 app.on("ready", async () => {
+    let b = new BrowserWindow({
+        width: 600,
+        height: 400,
+        webPreferences: {experimentalFeatures: true}
+    })
+    b.loadURL("http://localhost:5500")
+    b.show()
     console.log(pref.path)
     if (requireSetup) {
         try {
@@ -156,3 +170,5 @@ app.on("activate", (event, hasVisibleWindows) => {
         clientWin(preferences.client.client, id)
     })
 })
+
+app.commandLine.appendSwitch("--enable-features=CSSBackdropFilter")

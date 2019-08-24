@@ -33,9 +33,32 @@
     font-size: 20px;
     margin-bottom: 10px;
 }
-.player-queue-title {}
-.player-song-container {}
-.player-song-img {}
+.player-queue-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 32px;
+    margin: 10% 10px;
+}
+.player-song-container {
+    display: flex;
+    justify-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    height: 50px;
+}
+.player-song-img {
+    height: 100%;
+    flex-grow: 0;
+    border-radius: 7px;
+}
+.player-song-text {
+    display: flex;
+    flex-direction: column;
+}
+.player-song-text:first-child {
+    font-size: 24px;
+}
+.player-song-text:last-child {
+    font-size: 18px;
+}
 .player-slider {
     --val: 0;
     width: 80%;

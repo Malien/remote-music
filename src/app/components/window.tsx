@@ -29,6 +29,12 @@ export class Titlebar extends React.Component<BarConstructor, {focused: boolean}
             </>
         )
     }
+
+    public componentDidMount() {
+        let frame = document.getElementById("window-frame")
+        let contents = document.getElementById("window-contents")
+        if (frame && contents) contents.style.height = window.outerHeight - frame.clientHeight - 16 + "px"
+    }
 }
 export class InsetTitlebar extends Titlebar {
     public render() {
@@ -85,16 +91,17 @@ export class Toolbar extends React.Component<ToolbarWindowProps, {focused: boole
     }
 }
 
-export const TransparentTitlebar: FunctionComponent<BarConstructor> = props => 
-    <>
-        <div className={"window-titlebar window-transparent"}>
-            {props.title}
-        </div>
-        <div id="window-contents">
-            {props.children}
-        </div>
-    </>
-TransparentTitlebar.displayName = "TransparentTitlebar"
+export class TransparentTitlebar extends Titlebar {
+    public render = () => 
+        <>
+            <div id="window-frame" className={"window-titlebar window-transparent" + (this.state.focused ? "" : " window-disabled")}>
+                {this.props.title}
+            </div>
+            <div id="window-contents" className={"window-passtrough"}>
+                {this.props.children}
+            </div>
+        </>
+}
 
 export function windowResize() {
     console.log("resize")
