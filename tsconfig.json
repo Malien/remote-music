@@ -10,7 +10,6 @@
         "jsx": "react",
         "outDir": "dist",
         "target": "es5",
-        "module": "commonjs",
         "typeRoots": [
             "node_modules/@types"
         ],
@@ -19,9 +18,9 @@
             "es2018"
         ]
     },
-    "include": [
-        "src/main.ts",
-        "src/app/views/*.ts",
-        "src/app/views/*.tsx"
-    ]
+    // "include": [
+    //     "src/main.ts",
+    //     "src/app/views/*.ts",
+    //     "src/app/views/*.tsx"
+    // ]
 }

@@ -1,5 +1,5 @@
 import { PlayerServerAdapter, ClientServerAdapter, StreamingClientServerAdapter } from "./adapters"
-import { RemotePlayer, Sender } from "../../shared/components"
+import { RemotePlayer, Sender } from "../shared/components"
 import { Cache } from "../util/cache"
 
 function sendObj(this: Sender, msg: Record<string, any>, callback?: (...args: any[]) => any): void {

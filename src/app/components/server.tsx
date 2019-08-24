@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { FunctionComponent } from "react"
-import { Song } from "../../shared/components"
+import { Song } from "../shared/components"
 
 export const noArtwork = "../../../assets/SVG/no-artwork.svg"
 

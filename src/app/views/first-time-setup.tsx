@@ -3,10 +3,10 @@ import ReactDOM from "react-dom"
 import React, { Component } from "react"
 import { ipcRenderer } from "electron"
 
-import { PrefConstructorArgs, ServerType, ClientConfig, ServerTuple, ClientTuple, PlayerConfig } from "../../shared/preferences"
+import { PrefConstructorArgs, ServerType, ServerTuple, ClientTuple, PlayerConfig } from "../shared/preferences"
 
 import { OkButton, InputField, DoubleInputField, Checkbox, CheckboxSpoiler } from "../components/form"
-import { InsetTitlebar, Titlebar } from "../components/window"
+import { InsetTitlebar } from "../components/window"
 
 function docHeight() {
     // return Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight )

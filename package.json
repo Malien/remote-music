@@ -4,13 +4,14 @@
   "description": "Music client with remote commands support",
   "main": "dist/main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "go": "npm run build && npm start",
     "start": "electron .",
-    "build": "(tsc; echo \"Typescript compilation finished!\n\") & npm run restyle",
+    "alias": "npm run build",
     "clear": "rm -rf dist",
     "remove-pref-mac": "rm ~/Library/Preferences/remote-music-preference.json",
     "react-devtools": "react-devtools",
-    "restyle": "(mkdir -p dist/app/views & mkdir -p dist/app/styles); (cp -R src/app/styles/ dist/app/styles & find src/app/views ! \\( -name \"*.ts\" -o -name \"*.tsx\" \\) -type f -exec cp -fR {} dist/app/views/ \\;)"
+    "restyle": "(mkdir -p dist/app/views & mkdir -p dist/app/styles); (cp -R src/app/styles/ dist/app/styles & find src/app/views ! \\( -name \"*.ts\" -o -name \"*.tsx\" \\) -type f -exec cp -fR {} dist/app/views/ \\;)",
+    "build": "(tsc --build tsconfig.core.json & tsc --build tsconfig.app.json & wait; echo \"Typescript compilation finished!\n\") & npm run restyle & wait"
   },
   "repository": {
     "type": "git",
@@ -28,30 +29,31 @@
   },
   "homepage": "https://github.com/Malien/remote-music#readme",
   "devDependencies": {
-    "@types/react": "^16.8.23",
-    "@types/react-dom": "^16.8.4",
+    "@types/react": "^16.9.2",
+    "@types/react-dom": "^16.9.0",
     "@types/uuid": "^3.4.5",
-    "@types/ws": "^6.0.1",
-    "@typescript-eslint/eslint-plugin": "^1.12.0",
-    "@typescript-eslint/parser": "^1.12.0",
-    "electron": "^4.2.6",
+    "@types/ws": "^6.0.3",
+    "@typescript-eslint/eslint-plugin": "^1.13.0",
+    "@typescript-eslint/parser": "^1.13.0",
+    "electron": "^6.0.4",
     "electron-packager": "^13.1.1",
-    "electron-reload": "^1.4.1",
+    "electron-reload": "^1.5.0",
     "eslint": "^5.16.0",
-    "eslint-plugin-react": "^7.14.2",
-    "react-devtools": "^3.6.1",
+    "eslint-plugin-react": "^7.14.3",
+    "react-devtools": "^3.6.3",
+    "requirejs": "^2.3.6",
     "source-map-loader": "^0.2.4",
-    "terser": "^4.1.2",
+    "terser": "^4.2.0",
     "ts-loader": "^6.0.4",
-    "typescript": "^3.5.2",
-    "webpack": "^4.35.3",
-    "webpack-cli": "^3.3.6"
+    "typescript": "^3.5.3",
+    "webpack": "^4.39.2",
+    "webpack-cli": "^3.3.7"
   },
   "dependencies": {
-    "react": "^16.8.6",
-    "react-dom": "^16.8.6",
-    "uuid": "^3.3.2",
-    "ws": "^6.2.0"
+    "react": "^16.9.0",
+    "react-dom": "^16.9.0",
+    "uuid": "^3.3.3",
+    "ws": "^6.2.1"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.1",

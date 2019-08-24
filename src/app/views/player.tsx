@@ -2,8 +2,8 @@
 import React from "react"
 import ReactDOM from "react-dom"
 
-import { PlayerStatus, Song } from "../../shared/components"
-import { PlayerConfig } from "../../shared/preferences"
+import { PlayerStatus, Song } from "../shared/components"
+import { PlayerConfig } from "../shared/preferences"
 
 import { TransparentTitlebar, windowResize } from "../components/window"
 import { Player } from "../components/player"

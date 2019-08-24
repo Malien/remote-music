@@ -5,6 +5,7 @@ body {
 
 .window-titlebar {
     display: flex;
+    position: relative;
     justify-content: center;
     align-items: center;
     color: #474747;
@@ -16,15 +17,17 @@ body {
     background: linear-gradient(180deg, rgb(247,247,247) 0%, rgb(222,222,222) 100%);
     -webkit-app-region: drag;
     width: 100%;
-    height: 21px;
+    height: 17px;
     user-select: none;
     top: 0;
     right: 0;
     left: 0;
+    z-index: 20;
 }
 
 .window-transparent {
-    background-color: #ffffff55;
+    /* background-color: #ffffff55; */
+    background: none;
     border: none;
     -webkit-backdrop-filter: blur(40px) brightness(1) saturate(1);
     backdrop-filter: blur(40px) brightness(1) saturate(1);
@@ -37,7 +40,7 @@ body {
 
 .window-disabled {
     /* background-color: rgb(247,247,247) */
-    background: rgb(247,247,247);
+    /* background: rgb(247,247,247); */
     border-color: #cfcfcf;
     color: #afafaf;
 }
@@ -49,11 +52,13 @@ body {
 
 #window-contents {
     /* margin: 8px 8px 0px 8px; */
+    z-index: 10;
+    position: relative;
     overflow: scroll;
 }
 
-.window-passthrough {
-    margin-top: -25px;
+.window-passtrough {
+    /* margin-top: -21px; */
 }
 
 .window-toolbar {

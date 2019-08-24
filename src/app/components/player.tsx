@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { FunctionComponent, Component, RefObject } from "react"
 
-import { PlayerStatus, Song } from "../../shared/components"
+import { PlayerStatus, Song } from "../shared/components"
 import { noArtwork } from "./server"
 import { List } from "./layout"
 

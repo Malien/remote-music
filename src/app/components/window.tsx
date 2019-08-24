@@ -1,5 +1,11 @@
-import React, { FunctionComponent } from "react"
+import React from "react"
 import { ipcRenderer } from "electron"
+
+export function windowResize() {
+    let frame = document.getElementById("window-frame")
+    let contents = document.getElementById("window-contents")
+    if (frame && contents) contents.style.height = window.outerHeight - frame.clientHeight + "px"
+}
 
 interface BarConstructor {
     title?: string;
@@ -83,11 +89,7 @@ export class Toolbar extends React.Component<ToolbarWindowProps, {focused: boole
 
     public componentDidMount() {
         //FIXME: this is quite error prone! Should somehow detect when toolbar is rendered fully
-        setTimeout(() => {
-            let frame = document.getElementById("window-frame")
-            let contents = document.getElementById("window-contents")
-            if (frame && contents) contents.style.height = window.outerHeight - frame.clientHeight - 16 + "px"
-        }, 2000)
+        setTimeout(windowResize, 2000)
     }
 }
 
@@ -101,11 +103,4 @@ export class TransparentTitlebar extends Titlebar {
                 {this.props.children}
             </div>
         </>
-}
-
-export function windowResize() {
-    console.log("resize")
-    let frame = document.getElementById("window-frame")
-    let contents = document.getElementById("window-contents")
-    if (frame && contents) contents.style.height = window.outerHeight - frame.clientHeight - 8 + "px"
 }

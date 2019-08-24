@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { BrowserWindow, app, ipcMain, Event } from "electron"
+import { BrowserWindow, app, ipcMain, Event, IpcMainEvent } from "electron"
 require("electron-reload")(__dirname, {electron: require("./../node_modules/electron")})
 import { platform } from "os"
 
-import pref, {Preferences, PrefConstructorArgs, ClientConfig, PlayerConfig} from "./shared/preferences"
+import pref, {Preferences, PrefConstructorArgs, ClientConfig, PlayerConfig} from "./core/shared/preferences"
 import { PlayerServer, ClientServer } from "./core/server/server"
 import { interconnectFrom } from "./core/server/util"
 
@@ -29,7 +29,10 @@ async function firstTimeSetup() {
             title:"First time setup",
             frame: false,
             fullscreen: false,
-            maximizable: false
+            maximizable: false,
+            webPreferences: {
+                nodeIntegration: true
+            }
         }).on("blur", () => {
             ftsWin.webContents.send("window-blur")
         }).on("focus", () => {
@@ -38,20 +41,20 @@ async function firstTimeSetup() {
             ftsWin.show()
         })
         ftsWin.loadFile("./dist/app/views/first-time-setup.html")
-        ipcMain.once("ffs-finish", (event: Event, args: PrefConstructorArgs) => {
-            if (ftsWin.webContents == event.sender) {
+        ipcMain.once("ffs-finish", (event: IpcMainEvent, args: PrefConstructorArgs) => {
+            if (ftsWin.id == event.frameId) {
                 ftsWin.close()
                 resolve(new pref.Preferences(args))
             }
-        }).on("ffs-initial", (event: Event, height: number) => {
-            if (ftsWin.webContents == event.sender) {
+        }).on("ffs-initial", (event: IpcMainEvent, height: number) => {
+            if (ftsWin.id == event.frameId) {
                 ftsWin.setContentSize(500, height, false)
             }
-        }).on("ffs-expand", (event: Event, height: number) => {
-            if (ftsWin.webContents == event.sender) {
+        }).on("ffs-expand", (event: IpcMainEvent, height: number) => {
+            if (ftsWin.id == event.frameId) {
                 ftsWin.setContentSize(500, height, true)
             }
-        }).once("ffs-err", (event: Event) => {
+        }).once("ffs-err", (event: IpcMainEvent) => {
             if (ftsWin.webContents == event.sender) reject()
         })
     })
@@ -65,6 +68,9 @@ function selectionMenu(config: ClientConfig, onSelection: (id: string) => void) 
         titleBarStyle: "hidden",
         minHeight: 110,
         minWidth: 200,
+        webPreferences: {
+            nodeIntegration: true
+        }
     }).on("blur", () => {
         selectionWin.webContents.send("window-blur")
     }).on("focus", () => {
@@ -73,7 +79,7 @@ function selectionMenu(config: ClientConfig, onSelection: (id: string) => void) 
     selectionWin.loadFile("./dist/app/views/selection.html")
     selectionWin.webContents.on("dom-ready", () => {selectionWin.webContents.send("config", config)})
     selectionWin.show()
-    ipcMain.on("selection-select", (event: Event, id: string) => {
+    ipcMain.on("selection-select", (event: IpcMainEvent, id: string) => {
         onSelection(id)
     })
     return selectionWin
@@ -86,7 +92,7 @@ function playerWindow(config: PlayerConfig) {
         frame: false,
         titleBarStyle: "hidden",
         webPreferences: {
-            experimentalFeatures: true
+            nodeIntegration: true
         }
     }).on("blur", () => {
         playerWin.webContents.send("window-blur")
@@ -111,13 +117,6 @@ function clientWin(config: ClientConfig, id: string) {
 }
 
 app.on("ready", async () => {
-    let b = new BrowserWindow({
-        width: 600,
-        height: 400,
-        webPreferences: {experimentalFeatures: true}
-    })
-    b.loadURL("http://localhost:5500")
-    b.show()
     console.log(pref.path)
     if (requireSetup) {
         try {
@@ -149,9 +148,9 @@ app.on("ready", async () => {
         //Player creation
         if (typeof(preferences.client.player) != "undefined") {
             let playerWin = playerWindow(preferences.client.player)
-            ipcMain.on("player-register", (event: Event, id: string) => {
+            ipcMain.on("player-register", (event: IpcMainEvent, id: string) => {
                 playerId = id
-                if (event.sender == playerWin.webContents) {
+                if (event.frameId == playerWin.id) {
                     selection.webContents.send("player-register", id)
                 }
             })
@@ -170,5 +169,3 @@ app.on("activate", (event, hasVisibleWindows) => {
         clientWin(preferences.client.client, id)
     })
 })
-
-app.commandLine.appendSwitch("--enable-features=CSSBackdropFilter")
