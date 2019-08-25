@@ -3,8 +3,8 @@ import { ipcRenderer, Event } from "electron"
 import React from "react"
 import ReactDOM from "react-dom"
 
-import { ClientConfig } from "../shared/preferences"
-import { PlayerStatus } from "../shared/components"
+import { ClientConfig } from "../../shared/preferences"
+import { PlayerStatus } from "../../shared/components"
 
 import { List, LoadingArea } from "../components/layout"
 import { PlayerStats, PlayerStatsProps, CompactPlayerStats } from "../components/server"

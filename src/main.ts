@@ -3,7 +3,7 @@ import { BrowserWindow, app, ipcMain, Event, IpcMainEvent } from "electron"
 require("electron-reload")(__dirname, {electron: require("./../node_modules/electron")})
 import { platform } from "os"
 
-import pref, {Preferences, PrefConstructorArgs, ClientConfig, PlayerConfig} from "./core/shared/preferences"
+import pref, {Preferences, PrefConstructorArgs, ClientConfig, PlayerConfig} from "./shared/preferences"
 import { PlayerServer, ClientServer } from "./core/server/server"
 import { interconnectFrom } from "./core/server/util"
 

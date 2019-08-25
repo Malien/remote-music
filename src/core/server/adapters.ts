@@ -1,4 +1,4 @@
-import { Song, PlayerStatus, PlayerStatusChange, Sender } from "../shared/components"
+import { Song, PlayerStatus, PlayerStatusChange, Sender } from "../../shared/components"
 
 export interface PlayerServerAdapter {
     on(event: "pong",                       listener: (sender: Sender, status: PlayerStatus) => void): this;

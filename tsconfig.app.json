@@ -2,7 +2,7 @@
     "extends": "./tsconfig.json",
     "compilerOptions": {
         "module": "commonjs",
-        "outDir": "dist/app"
+        "outDir": "dist/"
     },
     "include": [
         "src/app/views/*.ts",

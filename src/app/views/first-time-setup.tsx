@@ -3,7 +3,7 @@ import ReactDOM from "react-dom"
 import React, { Component } from "react"
 import { ipcRenderer } from "electron"
 
-import { PrefConstructorArgs, ServerType, ServerTuple, ClientTuple, PlayerConfig } from "../shared/preferences"
+import { PrefConstructorArgs, ServerType, ServerTuple, ClientTuple, PlayerConfig } from "../../shared/preferences"
 
 import { OkButton, InputField, DoubleInputField, Checkbox, CheckboxSpoiler } from "../components/form"
 import { InsetTitlebar } from "../components/window"

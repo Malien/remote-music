@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { FunctionComponent, Component, RefObject } from "react"
 
-import { PlayerStatus, Song } from "../shared/components"
+import { PlayerStatus, Song } from "../../shared/components"
 import { noArtwork } from "./server"
-import { List } from "./layout"
+import { ThumbList } from "./layout"
 
 export const Player: FunctionComponent<PlayerStatus & ControlsDelegate & SliderDelegate> = props => 
     <div className="player-container">
@@ -22,20 +22,20 @@ Player.displayName = "Player"
 export const SongQueue: FunctionComponent<{songs: Song[]}> = ({songs}) => 
     <>
         <span className="player-queue-title">Next Up:</span>
-        <List>
+        <ThumbList>
             {songs.map(song => <SongDisplay song={song}/>)}
-        </List>
+        </ThumbList>
     </>
 SongQueue.displayName = "SongQueue"
 
 export const SongDisplay: FunctionComponent<{song: Song}> = ({song}) => 
-    <div className="player-song-container">
+    <>
         <img src={song.artwork || noArtwork} className="player-song-img"/>
         <div className="player-song-text">
-            <span>{song.title}</span>
-            <span>{song.artist + " ‒ " + song.album}</span>
+            <span className="player-song-title">{song.title}</span>
+            <span className="player-song-subtitle`">{song.artist + " ‒ " + song.album}</span>
         </div>
-    </div>
+    </>
 SongDisplay.displayName = "SongDisplay"
 
 interface ControlsDelegate {

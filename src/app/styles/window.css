@@ -55,11 +55,12 @@ body {
     z-index: 10;
     position: relative;
     overflow: scroll;
+    padding: 10px 0;
 }
 
-.window-passtrough {
-    /* margin-top: -21px; */
-}
+/* .window-passtrough {
+    margin-top: -21px;
+} */
 
 .window-toolbar {
     height: auto;

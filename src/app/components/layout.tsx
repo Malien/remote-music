@@ -10,6 +10,17 @@ export const List: FunctionComponent = props => {
 }
 List.displayName = "List"
 
+export const ThumbList: FunctionComponent = props => {
+    let liNodes = Children.map(props.children, node => <>{node}<div className="layout-tlist-divider"/></>)
+    return (
+        <div className="layout-tlist">
+            <div className="layout-tlist-divider"/>
+            {liNodes}
+        </div>
+    )
+}
+ThumbList.displayName = "ThumbList"
+
 interface LoadingAreaProps {
     loaded: boolean;
 }

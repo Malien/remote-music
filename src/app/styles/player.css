@@ -22,7 +22,7 @@
 }
 .player-display-artwork {
     width: 65%;
-    margin-top: 30px;
+    margin-top: 20px;
     margin-bottom: 20px;
     border-radius: 15px;
 }
@@ -37,28 +37,36 @@
 .player-queue-title {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     font-size: 32px;
-    margin: 10% 10px;
+    margin: 5% 10px 10px;
 }
-.player-song-container {
+/* .player-song-container {
     display: flex;
     justify-items: center;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     height: 50px;
-}
+    margin: 10px 20px;
+} */
 .player-song-img {
-    height: 100%;
+    height: 50px;
     flex-grow: 0;
-    border-radius: 7px;
+    border-radius: 3px;
+    grid-column: thumb;
 }
 .player-song-text {
+    grid-column: content;
     display: flex;
     flex-direction: column;
+    margin: 0 10px;
+    justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
-.player-song-text:first-child {
+.player-song-title {
     font-size: 24px;
+    font-weight: 400;
 }
-.player-song-text:last-child {
+.player-song-subtitle {
     font-size: 18px;
+    color: #888;
 }
 .player-slider {
     --val: 0;
@@ -84,9 +92,11 @@
     border: solid 2px #ccc;
     background-color: white;
     cursor: grab;
+    transition: transform 0.2s 0s ease-in;
 }
 .player-slider-dot:active {
     cursor: grabbing;
+    transform: scale(1.5);
 }
 .player-slider-time {
     position: absolute;
@@ -109,4 +119,9 @@
     height: 75px;
     margin: 15px;
     user-select: none;
+}
+
+/* layout.css overrides */
+.layout-tlist {
+    margin-left: 20px;
 }

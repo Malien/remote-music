@@ -15,3 +15,17 @@
     border-radius: 1px;
     background-color: #ccc;
 }
+
+.layout-tlist {
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: [thumb] 50px [content] auto;
+}
+.layout-tlist-divider {
+    grid-column: content;
+    width: calc(90% - 4px);
+    margin: 2px 10% 2px 4px;
+    height: 1px;
+    background-color: #ccc;
+}

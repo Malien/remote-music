@@ -4,7 +4,7 @@ import { ipcRenderer } from "electron"
 export function windowResize() {
     let frame = document.getElementById("window-frame")
     let contents = document.getElementById("window-contents")
-    if (frame && contents) contents.style.height = window.outerHeight - frame.clientHeight + "px"
+    if (frame && contents) contents.style.height = window.outerHeight - frame.clientHeight - 20 + "px"
 }
 
 interface BarConstructor {
@@ -103,4 +103,6 @@ export class TransparentTitlebar extends Titlebar {
                 {this.props.children}
             </div>
         </>
+
+    public componentDidMount = windowResize
 }

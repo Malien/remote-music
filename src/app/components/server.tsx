@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { FunctionComponent } from "react"
-import { Song } from "../shared/components"
+import { Song } from "../../shared/components"
 
 export const noArtwork = "../../../assets/SVG/no-artwork.svg"
 
@@ -14,7 +14,7 @@ export interface PlayerStatsProps {
 export const PlayerStats: FunctionComponent<PlayerStatsProps> = props => 
     <a className={"server-player" + (props.touch ? " server-touch" : "")} onClick={props.click}>
         <img 
-            src={(props.song && props.song.artwork) ? props.song.artwork.toString(): noArtwork}
+            src={(props.song && props.song.artwork) ? props.song.artwork.toString() : noArtwork}
             className="server-player-artwork"
             alt="Album artwork"
         />
