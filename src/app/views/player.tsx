@@ -87,4 +87,4 @@ ipcRenderer.once("config", (event, config: PlayerConfig) => {
     )
 })
 
-window.addEventListener("resize", windowResize)
+// window.addEventListener("resize", windowResize)

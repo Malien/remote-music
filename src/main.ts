@@ -42,16 +42,16 @@ async function firstTimeSetup() {
         })
         ftsWin.loadFile("./dist/app/views/first-time-setup.html")
         ipcMain.once("ffs-finish", (event: IpcMainEvent, args: PrefConstructorArgs) => {
-            if (ftsWin.id == event.frameId) {
+            if (ftsWin.webContents == event.sender) {
                 ftsWin.close()
                 resolve(new pref.Preferences(args))
             }
         }).on("ffs-initial", (event: IpcMainEvent, height: number) => {
-            if (ftsWin.id == event.frameId) {
+            if (ftsWin.webContents == event.sender) {
                 ftsWin.setContentSize(500, height, false)
             }
         }).on("ffs-expand", (event: IpcMainEvent, height: number) => {
-            if (ftsWin.id == event.frameId) {
+            if (ftsWin.webContents == event.sender) {
                 ftsWin.setContentSize(500, height, true)
             }
         }).once("ffs-err", (event: IpcMainEvent) => {
@@ -89,6 +89,8 @@ function playerWindow(config: PlayerConfig) {
     let playerWin = new BrowserWindow({
         height: 600,
         width: 350,
+        minWidth: 300,
+        minHeight: 475,
         frame: false,
         titleBarStyle: "hidden",
         webPreferences: {
@@ -98,6 +100,13 @@ function playerWindow(config: PlayerConfig) {
         playerWin.webContents.send("window-blur")
     }).on("focus", () => {
         playerWin.webContents.send("window-focus")
+    })
+    //TODO: implement window minimum width on renderer
+    ipcMain.on("player-height", (event, height) => {
+        if (playerWin.webContents == event.sender) {
+            let width = playerWin.getMinimumSize()[0]
+            playerWin.setMinimumSize(width, height)
+        }
     })
     playerWin.loadFile("./dist/app/views/player.html")
     playerWin.webContents.on("dom-ready", () => {playerWin.webContents.send("config", config)})
@@ -150,7 +159,7 @@ app.on("ready", async () => {
             let playerWin = playerWindow(preferences.client.player)
             ipcMain.on("player-register", (event: IpcMainEvent, id: string) => {
                 playerId = id
-                if (event.frameId == playerWin.id) {
+                if (event.sender == playerWin.webContents) {
                     selection.webContents.send("player-register", id)
                 }
             })

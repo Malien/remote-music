@@ -58,9 +58,9 @@ body {
     padding: 10px 0;
 }
 
-/* .window-passtrough {
-    margin-top: -21px;
-} */
+.window-passtrough {
+    height: calc(100% - 21px);
+}
 
 .window-toolbar {
     height: auto;

@@ -104,5 +104,5 @@ export class TransparentTitlebar extends Titlebar {
             </div>
         </>
 
-    public componentDidMount = windowResize
+    public componentDidMount(){}
 }

@@ -1,6 +1,7 @@
 .player-container {
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 .player-display {
     color: #464646;
@@ -119,6 +120,29 @@
     height: 75px;
     margin: 15px;
     user-select: none;
+}
+
+@media (min-width: 600px) {
+    .player-queue {
+        width: 300px;
+    }
+    .player-display {
+        width: calc(100% - 300px);
+        align-self: center;
+    }
+    .player-container {
+        flex-direction: row;
+    }
+}
+
+@media (min-width: 700px) {
+    .player-display {
+        width: 400px;
+        
+    }
+    .player-queue {
+        width: calc(100% - 400px);
+    }
 }
 
 /* layout.css overrides */

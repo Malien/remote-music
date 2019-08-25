@@ -1,13 +1,28 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { FunctionComponent, Component, RefObject } from "react"
+import { ipcRenderer } from "electron"
+import React, { FunctionComponent, Component, RefObject, useEffect, useRef } from "react"
 
 import { PlayerStatus, Song } from "../../shared/components"
 import { noArtwork } from "./server"
 import { ThumbList } from "./layout"
 
-export const Player: FunctionComponent<PlayerStatus & ControlsDelegate & SliderDelegate> = props => 
-    <div className="player-container">
-        <div className="player-display">
+export const Player: FunctionComponent<PlayerStatus & ControlsDelegate & SliderDelegate> = props => {
+    let displayRef = useRef<HTMLDivElement>(null)
+    useEffect(() => {
+        function resize(ev: UIEvent) {
+            let display = displayRef.current
+            if (display) {
+                ipcRenderer.send("player-height", display.clientHeight + 21)
+            }
+        } 
+        window.addEventListener("resize", resize)
+        return () => {
+            window.removeEventListener("resize", resize)
+        }
+    })
+
+    return <div className="player-container">
+        <div className="player-display" ref={displayRef}>
             <img draggable={false}  className="player-display-background" src={props.current ? (props.current.artwork || noArtwork) : noArtwork}/>
             <img className="player-display-artwork" src={props.current ? (props.current.artwork || noArtwork) : noArtwork} />
             <span className="player-display-title">{props.current ? props.current.title : "No song"}</span>
@@ -17,15 +32,16 @@ export const Player: FunctionComponent<PlayerStatus & ControlsDelegate & SliderD
         </div>
         <SongQueue songs={props.queue}></SongQueue>
     </div>
+}
 Player.displayName = "Player"
 
 export const SongQueue: FunctionComponent<{songs: Song[]}> = ({songs}) => 
-    <>
+    <div className="player-queue">
         <span className="player-queue-title">Next Up:</span>
         <ThumbList>
             {songs.map(song => <SongDisplay song={song}/>)}
         </ThumbList>
-    </>
+    </div>
 SongQueue.displayName = "SongQueue"
 
 export const SongDisplay: FunctionComponent<{song: Song}> = ({song}) => 
