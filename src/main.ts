@@ -31,7 +31,8 @@ async function firstTimeSetup() {
             fullscreen: false,
             maximizable: false,
             webPreferences: {
-                nodeIntegration: true
+                nodeIntegration: true,
+                enableRemoteModule: false
             }
         }).on("blur", () => {
             ftsWin.webContents.send("window-blur")
@@ -69,7 +70,8 @@ function selectionMenu(config: ClientConfig, onSelection: (id: string) => void) 
         minHeight: 110,
         minWidth: 200,
         webPreferences: {
-            nodeIntegration: true
+            nodeIntegration: true,
+            enableRemoteModule: false
         }
     }).on("blur", () => {
         selectionWin.webContents.send("window-blur")
@@ -94,7 +96,8 @@ function playerWindow(config: PlayerConfig) {
         frame: false,
         titleBarStyle: "hidden",
         webPreferences: {
-            nodeIntegration: true
+            nodeIntegration: true,
+            enableRemoteModule: false
         }
     }).on("blur", () => {
         playerWin.webContents.send("window-blur")

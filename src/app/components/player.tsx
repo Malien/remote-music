@@ -4,9 +4,43 @@ import React, { FunctionComponent, Component, RefObject, useEffect, useRef } fro
 
 import { PlayerStatus, Song } from "../../shared/components"
 import { noArtwork } from "./server"
-import { ThumbList } from "./layout"
+import { ThumbList, Dropdown } from "./layout"
 
-export const Player: FunctionComponent<PlayerStatus & ControlsDelegate & SliderDelegate> = props => {
+
+export enum ServiceAvailability{
+    connected = "Connected", 
+    notSupported = "Not supported", 
+    notConnected = "Not connected", 
+    notReachable = "Not reachable"
+}
+export enum Services {
+    spotify = "Spotify",
+    apple = "Apple Music",
+    local = "Local Machine"
+}
+interface ServiceList {
+    services: Map<Services, ServiceAvailability>;
+    service?: Services;
+    onSelect?: (service: Services) => void;
+}
+
+interface ServiceDisplayProps {
+    service: Services;
+    availability: ServiceAvailability;
+    selected?: boolean;
+    click?: (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => void;
+}
+
+export const ServiceDisplay: FunctionComponent<ServiceDisplayProps> = props => 
+    <>
+        <a className="player-service" onClick={props.click}>
+            <input type="checkbox" name={props.service} className="player-service-box" checked={props.selected}/>
+            <span className="player-service-name">{props.service}</span>
+            <span className="player-service-status">{props.availability}</span>
+        </a>
+    </>
+
+export const Player: FunctionComponent<PlayerStatus & ServiceList & ControlsDelegate & SliderDelegate> = props => {
     let displayRef = useRef<HTMLDivElement>(null)
     useEffect(() => {
         function resize(ev: UIEvent) {
@@ -19,10 +53,24 @@ export const Player: FunctionComponent<PlayerStatus & ControlsDelegate & SliderD
         return () => {
             window.removeEventListener("resize", resize)
         }
+    }, [])
+
+    let entries = Array<JSX.Element>(props.services.size)
+    props.services.forEach((availability, service) => {
+        entries.push(
+            <ServiceDisplay 
+                service={service} 
+                availability={availability} 
+                selected={props.service && props.service == service}
+                click={() => {if (props.onSelect) props.onSelect(service)}}
+            />)
     })
 
     return <div className="player-container">
         <div className="player-display" ref={displayRef}>
+            <Dropdown title={props.service ? props.service : "Select music provider"}>
+                {entries}
+            </Dropdown>
             <img draggable={false}  className="player-display-background" src={props.current ? (props.current.artwork || noArtwork) : noArtwork}/>
             <img className="player-display-artwork" src={props.current ? (props.current.artwork || noArtwork) : noArtwork} />
             <span className="player-display-title">{props.current ? props.current.title : "No song"}</span>
