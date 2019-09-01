@@ -104,7 +104,6 @@ function playerWindow(config: PlayerConfig) {
     }).on("focus", () => {
         playerWin.webContents.send("window-focus")
     })
-    //TODO: implement window minimum width on renderer
     ipcMain.on("player-height", (event, height) => {
         if (playerWin.webContents == event.sender) {
             let width = playerWin.getMinimumSize()[0]

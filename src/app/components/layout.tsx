@@ -35,23 +35,42 @@ interface DropdownProps {
 export const Dropdown: FunctionComponent<DropdownProps> = props => {
     let [hidden, setHidden] = useState(true)
     let dropdownRef = useRef<HTMLDivElement>(null)
+    let buttonRef = useRef<HTMLButtonElement>(null)
 
     useEffect(() => {
-        function listener(event: MouseEvent) {
+        function documentClick(event: MouseEvent) {
             let dropdown = dropdownRef.current
-            if (dropdown && event.target && !dropdown.contains(event.target as Node)) setHidden(true)
+            let button = buttonRef.current
+            if (dropdown 
+                && button
+                && event.target 
+                && !button.contains(event.target as Node)
+                && !dropdown.contains(event.target as Node)
+            ) {
+                setHidden(true)
+            }
         }
-        document.addEventListener("click", listener)
-        return () => {document.removeEventListener("click", listener)}
+        document.addEventListener("click", documentClick)
+        return () => {
+            document.removeEventListener("click", documentClick)
+        }
     }, [])
 
-    return (
-        <a className="layout-dropdown-top" onClick={()=>{
-            setHidden(!hidden)
-        }}>
-            <span className="layout-dropdown-title">{props.title}</span>
-            <img className="layout-dropdown-arrow" src=""/>
-            <div ref={dropdownRef} className={"layout-dropdown-content" + (hidden ? "layout-dropdown-hidden" : "")}>{props.children}</div>
-        </a>
-    )
+    return <>
+        <div className={"layout-dropdown-dimming" + (hidden ? " layout-dropdown-hidden" : "")}/>
+        <div className="layout-dropdown-spacer"/>
+        <div className={"layout-dropdown" + (hidden ? " layout-dropdown-hidden" : "")}>
+            <div className={"layout-dropdown-background" + (hidden ? " layout-dropdown-hidden" : "")}/>
+            <button ref={buttonRef} className="layout-dropdown-top" onClick={() => {
+                setHidden(!hidden)
+            }}>
+                <span className="layout-dropdown-title">{props.title}</span>
+                <img className={"layout-dropdown-arrow" + (hidden ? " layout-dropdown-hidden" : "")} src="../../../assets/SVG/dropdown-arrow.svg"/>
+            </button>
+            <div ref={dropdownRef} className={"layout-dropdown-content " + (hidden ? "layout-dropdown-hidden" : "")}>
+                {props.children}
+            </div>
+        </div>
+    </>
 }
+Dropdown.displayName = "Dropdown"

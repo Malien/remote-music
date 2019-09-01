@@ -40,7 +40,8 @@ body {
 
 .window-disabled {
     /* background-color: rgb(247,247,247) */
-    /* background: rgb(247,247,247); */
+    background: rgb(247,247,247);
+    filter: grayscale(1);
     border-color: #cfcfcf;
     color: #afafaf;
 }

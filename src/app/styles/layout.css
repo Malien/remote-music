@@ -29,3 +29,81 @@
     height: 1px;
     background-color: #ccc;
 }
+
+.layout-dropdown {
+    position: absolute;
+    width: 80%;
+    z-index: 2;
+}
+.layout-dropdown::after {
+    position: relative;
+    height: 100%;
+    content: "";
+}
+.layout-dropdown-dimming {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    background: #00000020;
+    top: 0;
+    left: 0;
+    transition: opacity 0.2s ease-in;
+    z-index: 1;
+}
+.layout-dropdown-dimming.layout-dropdown-hidden {
+    opacity: 0;
+}
+.layout-dropdown-spacer {
+    font-size: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    height: 1em;
+    margin: 10px;
+}
+.layout-dropdown-background {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 15px;
+    background: white;
+    box-shadow: #00000020 0px 0px 20px 20px;
+    transition: all 0.2s 0s ease-in;
+}
+.layout-dropdown-background.layout-dropdown-hidden {
+    opacity: 0;
+}
+.layout-dropdown-top {
+    top: 0;
+    appearance: none;
+    position: relative;
+    -webkit-appearance: none;
+    display: inline-block;
+    border: none;
+    background: none;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    outline: 0;
+}
+.layout-dropdown-title {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    font-size: 20px;
+    font-weight: 450;
+}
+.layout-dropdown-arrow {
+    height: 0.8em;
+    margin: 5px 5px;
+    transform: rotate(180deg);
+    transition: transform 0.2s 0s ease-in;
+}
+.layout-dropdown-arrow.layout-dropdown-hidden {
+    transform: rotate(0);
+}
+.layout-dropdown-content {
+    position: relative;
+    transition: opacity 0.2s 0s ease-in;
+}
+.layout-dropdown-content.layout-dropdown-hidden {
+    opacity: 0;
+}
