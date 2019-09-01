@@ -31,14 +31,23 @@ interface ServiceDisplayProps {
     click?: (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => void;
 }
 
-export const ServiceDisplay: FunctionComponent<ServiceDisplayProps> = props => 
-    <>
+export const ServiceDisplay: FunctionComponent<ServiceDisplayProps> = props => {
+    return <>
         <a className="player-service" onClick={props.click}>
             <input type="checkbox" name={props.service} className="player-service-box" checked={props.selected}/>
             <span className="player-service-name">{props.service}</span>
-            <span className="player-service-status">{props.availability}</span>
+            <span 
+                className={"player-service-status" + (props.availability == ServiceAvailability.connected
+                    ? " player-service-connected" 
+                    : (props.availability == ServiceAvailability.notConnected
+                        ? ""
+                        : " player-service-disabled"))}>
+                {props.availability}
+            </span>
         </a>
     </>
+}
+ServiceDisplay.displayName = "ServiceDisplay"
 
 export const Player: FunctionComponent<PlayerStatus & ServiceList & ControlsDelegate & SliderDelegate> = props => {
     let displayRef = useRef<HTMLDivElement>(null)
@@ -55,7 +64,7 @@ export const Player: FunctionComponent<PlayerStatus & ServiceList & ControlsDele
         }
     }, [])
 
-    let entries = Array<JSX.Element>(props.services.size)
+    let entries = Array<JSX.Element>()
     props.services.forEach((availability, service) => {
         entries.push(
             <ServiceDisplay 
@@ -69,7 +78,7 @@ export const Player: FunctionComponent<PlayerStatus & ServiceList & ControlsDele
     return <div className="player-container">
         <div className="player-display" ref={displayRef}>
             <Dropdown title={props.service ? props.service : "Select music provider"}>
-                {entries}
+                <ThumbList>{entries}</ThumbList>
             </Dropdown>
             <img draggable={false}  className="player-display-background" src={props.current ? (props.current.artwork || noArtwork) : noArtwork}/>
             <img className="player-display-artwork" src={props.current ? (props.current.artwork || noArtwork) : noArtwork} />
@@ -86,9 +95,11 @@ Player.displayName = "Player"
 export const SongQueue: FunctionComponent<{songs: Song[]}> = ({songs}) => 
     <div className="player-queue">
         <span className="player-queue-title">Next Up:</span>
-        <ThumbList>
-            {songs.map(song => <SongDisplay song={song}/>)}
-        </ThumbList>
+        <div className="player-padding">
+            <ThumbList>
+                {songs.map(song => <SongDisplay song={song}/>)}
+            </ThumbList>
+        </div>
     </div>
 SongQueue.displayName = "SongQueue"
 
@@ -109,11 +120,12 @@ interface ControlsDelegate {
 }
 
 export const MediaControls: FunctionComponent<ControlsDelegate & {playing: boolean}> = props => 
-    <div className="player-media-controls">
+    (<div className="player-media-controls">
         <img draggable={false} className="player-media-button" onClick={props.onPrev} src="../../../assets/SVG/controls-prev.svg"/>
         <img draggable={false} className="player-media-button" onClick={props.onPlay} src={`../../../assets/SVG/controls-${props.playing ? "pause" : "play"}.svg`}/>
         <img draggable={false} className="player-media-button" onClick={props.onNext} src="../../../assets/SVG/controls-next.svg"/>
-    </div>
+    </div>)
+MediaControls.displayName = "MediaControlls"
 
 interface SliderProps {
     min: number;
@@ -122,11 +134,9 @@ interface SliderProps {
     timestamp?: boolean;
     disabled?: boolean;
 }
-
 interface SliderDelegate {
     onScrub?: (val: number) => void;
 }
-
 export class Slider extends Component<SliderProps & SliderDelegate, {per: number}> {
     private dotRef: RefObject<HTMLDivElement>
     private contRef: RefObject<HTMLDivElement>

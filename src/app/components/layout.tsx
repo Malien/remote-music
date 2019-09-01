@@ -1,5 +1,12 @@
 import React, { FunctionComponent, Children, useState, useEffect, useRef } from "react"
 
+export function useKeyDown(listener: (this: Document, event: KeyboardEvent) => void) {
+    useEffect(() => {
+        document.addEventListener("keydown", listener)
+        return () => {document.removeEventListener("keydown", listener)}
+    })
+}
+
 export const List: FunctionComponent = props => {
     let liNodes = Children.map(props.children, (node) => <li className="layout-list-item">{node}<div className="layout-list-divider"/></li>)
     return (
@@ -10,8 +17,8 @@ export const List: FunctionComponent = props => {
 }
 List.displayName = "List"
 
-export const ThumbList: FunctionComponent = props => {
-    let liNodes = Children.map(props.children, node => <>{node}<div className="layout-tlist-divider"/></>)
+export const ThumbList: FunctionComponent = ({children}) => {
+    let liNodes = Children.map(children, node => <>{node}<div className="layout-tlist-divider"/></>)
     return (
         <div className="layout-tlist">
             <div className="layout-tlist-divider"/>
@@ -55,6 +62,9 @@ export const Dropdown: FunctionComponent<DropdownProps> = props => {
             document.removeEventListener("click", documentClick)
         }
     }, [])
+    useKeyDown((event) => {
+        if (event.key == "Escape" && !hidden) setHidden(true)
+    })
 
     return <>
         <div className={"layout-dropdown-dimming" + (hidden ? " layout-dropdown-hidden" : "")}/>
