@@ -6,7 +6,6 @@ import { platform } from "os"
 import pref, {Preferences, PrefConstructorArgs, ClientConfig, PlayerConfig} from "./shared/preferences"
 import { PlayerServer, ClientServer } from "./core/server/server"
 import { interconnectFrom } from "./core/server/util"
-import { RemoteUse } from "./shared/apis";
 
 let requireSetup = !pref.canBeMerged(pref.path)
 
@@ -27,7 +26,6 @@ async function firstTimeSetup() {
             minHeight: 212,
             minWidth: 500,
             maxWidth: 500,
-            //I'm not so sure about resisable false here
             resizable: true,
             titleBarStyle: "hiddenInset",
             title:"First time setup",
@@ -143,22 +141,24 @@ app.on("ready", async () => {
         }
         preferences.save(pref.path)
     } else {
-        preferences = pref.read(pref.path)
+        preferences = await pref.read(pref.path)
     }
     console.log(preferences)
     //Server creation
-    if (typeof(preferences.server) != "undefined") {
+    if (preferences.server) {
         ({client, player} = interconnectFrom(preferences.server))
     }
     //Selection menu creation
-    if (typeof(preferences.client) != "undefined") {
+    if (preferences.client) {
         selection = selectionMenu(preferences.client.client, (id) => {
             //Client creation
-            if (preferences.client.player && id == playerId) {
-                if (playerWin) playerWin.show()
-                else playerWin = playerWindow(preferences.client.player)
+            if (preferences.client){
+                if (preferences.client.player && id == playerId) {
+                    if (playerWin) playerWin.show()
+                    else playerWin = playerWindow(preferences.client.player)
+                }
+                else clientWin(preferences.client.client, id)
             }
-            else clientWin(preferences.client.client, id)
         })
         //Player creation
         if (typeof(preferences.client.player) != "undefined") {
@@ -180,7 +180,7 @@ app.on("window-all-closed", () =>{
 })
 
 app.on("activate", (event, hasVisibleWindows) => {
-    if (!hasVisibleWindows) selectionMenu(preferences.client.client, (id) => {
-        clientWin(preferences.client.client, id)
+    if (!hasVisibleWindows && preferences.client) selectionMenu(preferences.client.client, (id) => {
+        if (preferences.client) clientWin(preferences.client.client, id)
     })
 })

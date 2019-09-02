@@ -1,4 +1,4 @@
-import { writeFile, readFileSync, existsSync, mkdirSync } from "fs"
+import { writeFile, readFileSync, readFile, existsSync, exists, mkdir } from "fs"
 import { Comparartor } from "./components"
 let currentVersion = require("./../../package.json").version as string
 
@@ -13,29 +13,31 @@ export const path = baseDirPath + "/remote-music-preference.json"
 
 export class Preferences {
     public version: string
-    public client: ClientTuple
-    public server: ServerTuple
-    public constructor({ client, server }: PrefConstructorArgs = {}){
-        if (typeof(server) != "undefined"){
-            this.server = server as ServerTuple
-        }
-        if (typeof(client) != "undefined"){
-            this.client = client as ClientTuple
-        }
+    public client?: ClientTuple
+    public server?: ServerTuple
+    public constructor(args: PrefConstructorArgs = {}){
+        Object.assign(this, args)
         this.version = currentVersion
     }
-    public read(path: string) {
-        let data = readFileSync(path).toString()
-        let parsedData = JSON.parse(data)
-        
-        this.server = parsedData["server"]
-        this.client = parsedData["client"]
-        this.version = parsedData["version"]
+    public async read(path: string) {
+        return new Promise<Preferences>((resolve, reject) => {
+            readFile(path, (err, data) => {
+                if (err) reject(err)
+                let parsedData = JSON.parse(data.toString())
+                Object.assign(this, parsedData)
+                resolve(this)
+            })
+        })
     }
     public save(path: string) {
-        if (!existsSync(baseDirPath)) mkdirSync(baseDirPath)
         let str = JSON.stringify(this)
-        writeFile(path, str, console.error)
+        exists(baseDirPath, exists => {
+            if (exists) {
+                writeFile(path, str, err => {if (err) console.error(err)})
+            } else mkdir(baseDirPath, () => {
+                writeFile(path, str, err => {if (err) console.error(err)})
+            })
+        })
     }
 }
 
@@ -87,6 +89,7 @@ export let versionComparator = new class implements Comparartor<string>{
 }()
 
 //TODO: provide more sophisticated preference merge algorithm
+//FIXME: Now it's redundant ((
 export function merge(data: any): Preferences{
     let version = data.version
     if (versionComparator.compare(version, currentVersion) == 0) {
@@ -98,7 +101,7 @@ export function merge(data: any): Preferences{
                 client: {
                     type: data.server.clientType,
                     port: data.server.clientPort
-                },
+                }, 
                 player: {
                     type: data.server.playerType,
                     port: data.server.playerPort
@@ -109,15 +112,8 @@ export function merge(data: any): Preferences{
     throw new Error("Can't merge preferences")
 }
 
-export function read(path: string): Preferences {
-    let data = readFileSync(path).toString()
-    let parsedData = JSON.parse(data)
-    if (parsedData.version != currentVersion) {
-        let merged = merge(parsedData)
-        merged.save(path)
-        return merged
-    }
-    return parsedData as Preferences
+export async function read(path: string): Promise<Preferences> {
+    return new Preferences().read(path)
 }
 
 export function canBeMerged(path: string): boolean {
