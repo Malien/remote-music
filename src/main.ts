@@ -97,6 +97,7 @@ function playerWindow(config: PlayerConfig) {
         minHeight: 475,
         frame: false,
         titleBarStyle: "hidden",
+        show: false,
         webPreferences: {
             nodeIntegration: true,
         }
@@ -110,11 +111,13 @@ function playerWindow(config: PlayerConfig) {
             let width = playerWin.getMinimumSize()[0]
             playerWin.setMinimumSize(width, height)
         }
+    }).on("player-init", (event) => {
+        if (playerWin.webContents == event.sender) playerWin.show()
     })
     playerWin.loadFile("./dist/app/views/player.html")
     playerWin.webContents.on("dom-ready", () => {playerWin.webContents.send("config", config)})
     // RemoteUse.notify(playerWin.webContents)
-    playerWin.show()
+    // playerWin.show()
     return playerWin
 }
 

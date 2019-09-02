@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React from "react"
+import React, { FunctionComponent, useState } from "react"
 import ReactDOM from "react-dom"
 
 import { PlayerStatus, Song, PlayerStatusChange } from "../../shared/components"
@@ -88,6 +88,7 @@ class PlayerApp extends React.Component<PlayerConfig, PlayerAppState> {
     }
 
     public componentDidMount() {
+        ipcRenderer.send("player-init")
         document.addEventListener("musickitloaded", () => {
             // let MKInstance = MusicKit.configure({
             //     developerToken: "",
@@ -152,13 +153,29 @@ class PlayerApp extends React.Component<PlayerConfig, PlayerAppState> {
     }
 }
 
-ipcRenderer.once("config", (event, config: PlayerConfig) => {
-    ReactDOM.render(
-        // <TitlebarWindow>
-        <PlayerApp type={config.type} port={config.port} address={config.address} name={config.name}/>
-        // </TitlebarWindow>
-        ,document.getElementById("mount")
-    )
-}).once("service-data", console.log)
+const AwaitedPlayerApp: FunctionComponent = props => {
+    let [config, setConfig] = useState<PlayerConfig | undefined>(undefined)
+    ipcRenderer.once("config", (event, config: PlayerConfig) => setConfig(config))
+
+    return config 
+        ? <PlayerApp type={config.type} port={config.port} address={config.address} name={config.name}/>
+        : <TransparentTitlebar title="Loading">
+            <Player progress={0} queue={[]} playing={false} services={new Map()}/>
+        </TransparentTitlebar>
+}
+
+ReactDOM.render(
+    <AwaitedPlayerApp/>,
+    document.getElementById("mount")
+)
+
+// ipcRenderer.once("config", (event, config: PlayerConfig) => {
+//     ReactDOM.render(
+//         // <TitlebarWindow>
+//         <PlayerApp type={config.type} port={config.port} address={config.address} name={config.name}/>
+//         // </TitlebarWindow>
+//         ,document.getElementById("mount")
+//     )
+// }).once("service-data", console.log)
 
 // window.addEventListener("resize", windowResize)
