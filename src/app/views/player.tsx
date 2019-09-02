@@ -4,9 +4,10 @@ import ReactDOM from "react-dom"
 
 import { PlayerStatus, Song, PlayerStatusChange } from "../../shared/components"
 import { PlayerConfig } from "../../shared/preferences"
+import { Services, ServiceAvailability } from "../../shared/apis"
 
 import { TransparentTitlebar, windowResize } from "../components/window"
-import { Player, Services, ServiceAvailability } from "../components/player"
+import { Player } from "../components/player"
 import { ipcRenderer } from "electron"
 import { PlayerServerRequest } from "./comms"
 
@@ -15,8 +16,12 @@ interface Req {
     payload?: any;
 }
 // declare namespace MusicKit {}
+interface PlayerAppState extends PlayerStatus {
+    services: Map<Services, ServiceAvailability>;
+    service?: Services;
+}
 
-class PlayerApp extends React.Component<PlayerConfig, PlayerStatus> {
+class PlayerApp extends React.Component<PlayerConfig, PlayerAppState> {
     private ws: WebSocket
     private id?: string
     private interval: number
@@ -30,7 +35,17 @@ class PlayerApp extends React.Component<PlayerConfig, PlayerStatus> {
             artwork:"/Users/yaroslav/Downloads/twenty one pilots - Trench (2018) [ALAC]/cover.jpg", 
             length:239
         }
-        this.state = {current: song, progress: 100, playing: false, queue: [song, song, song, song, song, song, song, song, song, song, song, song, song, song, song, song]}
+        this.state = {
+            current: song, 
+            progress: 100, 
+            playing: false, 
+            queue: [song, song, song, song, song, song, song, song, song, song, song, song, song, song, song, song],
+            services: new Map([
+                [Services.spotify, ServiceAvailability.notConnected],
+                [Services.apple, ServiceAvailability.notSupported],
+                [Services.local, ServiceAvailability.notSupported],
+            ])
+        }
         this.ws = new WebSocket(props.address + ":" + props.port)
         this.ws.onopen = (() => {
             this.send({type:"register", payload:props.name})
@@ -105,17 +120,33 @@ class PlayerApp extends React.Component<PlayerConfig, PlayerStatus> {
                 progress={this.state.progress} 
                 playing={this.state.playing} 
                 queue={this.state.queue}
-                services={new Map<Services, ServiceAvailability>([
-                    [Services.spotify, ServiceAvailability.notConnected],
-                    [Services.apple, ServiceAvailability.notReachable],
-                    [Services.local, ServiceAvailability.notSupported],
-                ])}
+                services={this.state.services}
+                service={this.state.service}
                 onScrub={progress => {
                     if (this.state.current)
                         this.setState(Object.assign({}, this.state, {progress}))
                 }}
                 onPlay={() => {
                     this.setState({...this.state, playing: !this.state.playing})
+                }}
+                onSelect={(service) => {
+                    let availability = this.state.services.get(service)
+                    switch (availability) {
+                        case "Connected":
+                            this.setState({...this.state, service: service})
+                            break
+                        case "Not connected":
+                            switch (service) {
+                                case "Spotify":
+                                    break
+                                case "Apple Music":
+                                case "Local Machine":
+                            }
+                            break
+                        case "Not supported":
+                        case "Not reachable":
+                        case undefined:
+                    }
                 }}/>
         </TransparentTitlebar>
     }
@@ -128,6 +159,6 @@ ipcRenderer.once("config", (event, config: PlayerConfig) => {
         // </TitlebarWindow>
         ,document.getElementById("mount")
     )
-})
+}).once("service-data", console.log)
 
 // window.addEventListener("resize", windowResize)

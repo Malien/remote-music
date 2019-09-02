@@ -144,3 +144,9 @@
     display: grid;
     grid-template-columns: var(--grid-column-layout);
 }
+
+/* window override */
+#window-contents {
+    padding: 8px;
+    padding-bottom: 16px;
+}

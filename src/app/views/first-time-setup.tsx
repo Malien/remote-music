@@ -10,7 +10,7 @@ import { InsetTitlebar } from "../components/window"
 
 function docHeight() {
     // return Math.max( body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight )
-    return document.body.offsetHeight + 16
+    return document.body.offsetHeight
 }
 
 interface FormState {

@@ -205,3 +205,8 @@
         width: calc(100% - 400px);
     }
 }
+
+/* layout override */
+.layout-dropdown {
+    width: calc(100% - 20px - 240 * (100% - 300px) / 300);
+}

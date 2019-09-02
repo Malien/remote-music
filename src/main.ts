@@ -6,6 +6,7 @@ import { platform } from "os"
 import pref, {Preferences, PrefConstructorArgs, ClientConfig, PlayerConfig} from "./shared/preferences"
 import { PlayerServer, ClientServer } from "./core/server/server"
 import { interconnectFrom } from "./core/server/util"
+import { RemoteUse } from "./shared/apis";
 
 let requireSetup = !pref.canBeMerged(pref.path)
 
@@ -21,8 +22,11 @@ let playerWin: BrowserWindow | undefined
 async function firstTimeSetup() {
     return new Promise<Preferences>((resolve, reject) => {
         let ftsWin = new BrowserWindow({
-            height: 200,
+            height: 212,
             width: 500,
+            minHeight: 212,
+            minWidth: 500,
+            maxWidth: 500,
             //I'm not so sure about resisable false here
             resizable: true,
             titleBarStyle: "hiddenInset",
@@ -97,7 +101,6 @@ function playerWindow(config: PlayerConfig) {
         titleBarStyle: "hidden",
         webPreferences: {
             nodeIntegration: true,
-            enableRemoteModule: false
         }
     }).on("blur", () => {
         playerWin.webContents.send("window-blur")
@@ -112,6 +115,7 @@ function playerWindow(config: PlayerConfig) {
     })
     playerWin.loadFile("./dist/app/views/player.html")
     playerWin.webContents.on("dom-ready", () => {playerWin.webContents.send("config", config)})
+    // RemoteUse.notify(playerWin.webContents)
     playerWin.show()
     return playerWin
 }

@@ -3,21 +3,11 @@ import { ipcRenderer } from "electron"
 import React, { FunctionComponent, Component, RefObject, useEffect, useRef } from "react"
 
 import { PlayerStatus, Song } from "../../shared/components"
+import { ServiceAvailability, Services } from "../../shared/apis"
+
 import { noArtwork } from "./server"
 import { ThumbList, Dropdown } from "./layout"
 
-
-export enum ServiceAvailability{
-    connected = "Connected", 
-    notSupported = "Not supported", 
-    notConnected = "Not connected", 
-    notReachable = "Not reachable"
-}
-export enum Services {
-    spotify = "Spotify",
-    apple = "Apple Music",
-    local = "Local Machine"
-}
 interface ServiceList {
     services: Map<Services, ServiceAvailability>;
     service?: Services;

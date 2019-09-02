@@ -1,4 +1,4 @@
-import * as fs from "fs"
+import { writeFile, readFileSync, existsSync, mkdirSync } from "fs"
 import { Comparartor } from "./components"
 let currentVersion = require("./../../package.json").version as string
 
@@ -6,6 +6,10 @@ export interface PrefConstructorArgs {
     client?: ClientTuple;
     server?: ServerTuple;
 }
+
+var baseDirPath = process.env.APPDATA || (process.platform == "darwin" ? process.env.HOME + "/Library/Preferences" : process.env.HOME + "/.local/share")
+baseDirPath += "/RemoteMusic"
+export const path = baseDirPath + "/remote-music-preference.json"
 
 export class Preferences {
     public version: string
@@ -21,7 +25,7 @@ export class Preferences {
         this.version = currentVersion
     }
     public read(path: string) {
-        let data = fs.readFileSync(path).toString()
+        let data = readFileSync(path).toString()
         let parsedData = JSON.parse(data)
         
         this.server = parsedData["server"]
@@ -29,8 +33,9 @@ export class Preferences {
         this.version = parsedData["version"]
     }
     public save(path: string) {
+        if (!existsSync(baseDirPath)) mkdirSync(baseDirPath)
         let str = JSON.stringify(this)
-        fs.writeFileSync(path, str)
+        writeFile(path, str, console.error)
     }
 }
 
@@ -105,7 +110,7 @@ export function merge(data: any): Preferences{
 }
 
 export function read(path: string): Preferences {
-    let data = fs.readFileSync(path).toString()
+    let data = readFileSync(path).toString()
     let parsedData = JSON.parse(data)
     if (parsedData.version != currentVersion) {
         let merged = merge(parsedData)
@@ -116,16 +121,12 @@ export function read(path: string): Preferences {
 }
 
 export function canBeMerged(path: string): boolean {
-    if (!fs.existsSync(path)) return false
-    let data = fs.readFileSync(path).toString()
+    if (!existsSync(path)) return false
+    let data = readFileSync(path).toString()
     let parsed = JSON.parse(data)
     if (versionComparator.compare(parsed.version, "1.0.0") < 0) return false
     return true
 }
-
-var preferencePath = process.env.APPDATA || (process.platform == "darwin" ? process.env.HOME + "/Library/Preferences" : process.env.HOME + "/.local/share")
-preferencePath += "/remote-music-preference.json"
-export const path = preferencePath
     
 export function save(pref: Preferences, path: string){
     pref.save(path)

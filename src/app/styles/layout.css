@@ -32,7 +32,6 @@
 
 .layout-dropdown {
     position: absolute;
-    width: 90%;
     z-index: 2;
 }
 .layout-dropdown-dimming {
