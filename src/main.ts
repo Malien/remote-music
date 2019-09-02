@@ -4,6 +4,7 @@ require("electron-reload")(__dirname, {electron: require("./../node_modules/elec
 import { platform } from "os"
 
 import pref, {Preferences, PrefConstructorArgs, ClientConfig, PlayerConfig} from "./shared/preferences"
+import Session, { PlayerSession, PlayerSessionLike } from "./shared/session"
 import { PlayerServer, ClientServer } from "./core/server/server"
 import { interconnectFrom } from "./core/server/util"
 
@@ -113,9 +114,16 @@ function playerWindow(config: PlayerConfig) {
         }
     }).on("player-init", (event) => {
         if (playerWin.webContents == event.sender) playerWin.show()
+    }).on("session-update", (event, session: PlayerSessionLike) => {
+        Session.save(Session.path, session)
     })
     playerWin.loadFile("./dist/app/views/player.html")
-    playerWin.webContents.on("dom-ready", () => {playerWin.webContents.send("config", config)})
+    playerWin.webContents.on("dom-ready", () => {
+        playerWin.webContents.send("config", config)
+        Session.read(Session.path)
+            .then(session => playerWin.webContents.send("session", session))
+            .catch(err => {playerWin.webContents.send("session", new PlayerSession())})
+    })
     // RemoteUse.notify(playerWin.webContents)
     // playerWin.show()
     return playerWin

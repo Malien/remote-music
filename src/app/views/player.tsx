@@ -88,7 +88,7 @@ class PlayerApp extends React.Component<PlayerConfig, PlayerAppState> {
     }
 
     public componentDidMount() {
-        ipcRenderer.send("player-init")
+        requestAnimationFrame(() => ipcRenderer.send("player-init"))
         document.addEventListener("musickitloaded", () => {
             // let MKInstance = MusicKit.configure({
             //     developerToken: "",
