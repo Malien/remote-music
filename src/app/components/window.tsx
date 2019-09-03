@@ -15,12 +15,6 @@ export class Titlebar extends React.Component<BarConstructor, {focused: boolean}
     public constructor(props: BarConstructor) {
         super(props)
         this.state = {focused: true}
-        ipcRenderer.on("window-blur", () => {
-            this.setState({focused: false})
-        })
-        ipcRenderer.on("window-focus", () => {
-            this.setState({focused: true})
-        })
     }
     
     public render() {
@@ -35,8 +29,14 @@ export class Titlebar extends React.Component<BarConstructor, {focused: boolean}
             </>
         )
     }
-
+    
     public componentDidMount() {
+        ipcRenderer.on("window-blur", () => {
+            this.setState({focused: false})
+        })
+        ipcRenderer.on("window-focus", () => {
+            this.setState({focused: true})
+        })
         let frame = document.getElementById("window-frame")
         let contents = document.getElementById("window-contents")
         if (frame && contents) contents.style.height = window.outerHeight - frame.clientHeight - 16 + "px"

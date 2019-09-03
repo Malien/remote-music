@@ -81,7 +81,7 @@ function selectionMenu(config: ClientConfig, onSelection: (id: string) => void) 
     }).on("focus", () => {
         selectionWin.webContents.send("window-focus")
     })
-    selectionWin.loadFile("./dist/app/views/selection.html")
+    // selectionWin.loadFile("./dist/app/views/selection.html")
     selectionWin.webContents.on("dom-ready", () => {selectionWin.webContents.send("config", config)})
     selectionWin.show()
     ipcMain.on("selection-select", (event: IpcMainEvent, id: string) => {
@@ -98,7 +98,7 @@ function playerWindow(config: PlayerConfig) {
         minHeight: 475,
         frame: false,
         titleBarStyle: "hidden",
-        show: false,
+        show: true,
         webPreferences: {
             nodeIntegration: true,
         }
@@ -106,7 +106,7 @@ function playerWindow(config: PlayerConfig) {
         playerWin.webContents.send("window-blur")
     }).on("focus", () => {
         playerWin.webContents.send("window-focus")
-    })
+    }).on("close", () => {playerWin.webContents.send("close")})
     ipcMain.on("player-height", (event, height) => {
         if (playerWin.webContents == event.sender) {
             let width = playerWin.getMinimumSize()[0]
@@ -118,11 +118,13 @@ function playerWindow(config: PlayerConfig) {
         Session.save(Session.path, session)
     })
     playerWin.loadFile("./dist/app/views/player.html")
-    playerWin.webContents.on("dom-ready", () => {
-        playerWin.webContents.send("config", config)
-        Session.read(Session.path)
-            .then(session => playerWin.webContents.send("session", session))
-            .catch(err => {playerWin.webContents.send("session", new PlayerSession())})
+    ipcMain.on("player-ready", (event) => {
+        if (event.sender == playerWin.webContents) {
+            playerWin.webContents.send("config", config)
+            Session.read(Session.path)
+                .then(session => {playerWin.webContents.send("session", session)})
+                .catch(err => {playerWin.webContents.send("session", new PlayerSession())})
+        }
     })
     // RemoteUse.notify(playerWin.webContents)
     // playerWin.show()

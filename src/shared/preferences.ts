@@ -8,7 +8,7 @@ export interface PrefConstructorArgs {
 }
 
 var baseDirPath = process.env.APPDATA || (process.platform == "darwin" ? process.env.HOME + "/Library/Preferences" : process.env.HOME + "/.local/share")
-baseDirPath += "/RemoteMusic"
+baseDirPath += "/remote-music"
 export const path = baseDirPath + "/remote-music-preference.json"
 
 export class Preferences {

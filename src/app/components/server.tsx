@@ -6,7 +6,7 @@ export const noArtwork = "../../../assets/SVG/no-artwork.svg"
 
 export interface PlayerStatsProps {
     name: string;
-    song?: Song;
+    song?: Song | null;
     click?: (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => void;
     touch?: boolean;
 }

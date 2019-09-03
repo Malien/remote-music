@@ -1,11 +1,21 @@
 import { writeFile, readFile, PathLike } from "fs"
 import { platform } from "os"
 import { PlayerStatus, Song } from "./components"
+import { Services, ServiceAvailability } from "./apis"
 
-export interface PlayerSessionLike extends PlayerStatus {}
+export interface PlayerSessionLike extends PlayerStatus {
+    services: Map<Services, ServiceAvailability>;
+    service?: Services;
+}
 
 export class PlayerSession implements PlayerSessionLike {
-    public current?: Song | undefined;    
+    public services: Map<Services, ServiceAvailability> = new Map([
+        [Services.spotify, ServiceAvailability.notConnected],
+        [Services.apple, ServiceAvailability.notSupported],
+        [Services.local, ServiceAvailability.notSupported],
+    ])
+    public service?: Services | undefined
+    public current: Song | null = null;
     public progress: number = 0;
     public playing: boolean = false;
     public queue: Song[] = [];
@@ -32,7 +42,7 @@ export class PlayerSession implements PlayerSessionLike {
                     //other hopefully unix based systems
                     path = process.env.HOME + "./local/share"
             }
-            this.baseDirPath = path + "/RemoteMusic"
+            this.baseDirPath = path + "/remote-music"
             this._path = this.baseDirPath + "/remote-music-session.json"
             return this._path
         }

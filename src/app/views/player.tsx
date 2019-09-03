@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { FunctionComponent, useState } from "react"
+import React, { FunctionComponent, useState, useEffect } from "react"
 import ReactDOM from "react-dom"
 
 import { PlayerStatus, Song, PlayerStatusChange } from "../../shared/components"
 import { PlayerConfig } from "../../shared/preferences"
 import { Services, ServiceAvailability } from "../../shared/apis"
+import { PlayerSessionLike } from "../../shared/session";
 
 import { TransparentTitlebar, windowResize } from "../components/window"
 import { Player } from "../components/player"
@@ -16,15 +17,12 @@ interface Req {
     payload?: any;
 }
 // declare namespace MusicKit {}
-interface PlayerAppState extends PlayerStatus {
-    services: Map<Services, ServiceAvailability>;
-    service?: Services;
-}
 
-class PlayerApp extends React.Component<PlayerConfig, PlayerAppState> {
+class PlayerApp extends React.Component<PlayerConfig, PlayerSessionLike> {
     private ws: WebSocket
     private id?: string
     private interval: number
+    private statusUpdateQueue: PlayerStatusChange[] = []
 
     public constructor(props: PlayerConfig) {
         super(props)
@@ -46,29 +44,12 @@ class PlayerApp extends React.Component<PlayerConfig, PlayerAppState> {
                 [Services.local, ServiceAvailability.notSupported],
             ])
         }
+
+        ipcRenderer.on("close", (event) => ipcRenderer.send("session-update", {...this.state}))
+
         this.ws = new WebSocket(props.address + ":" + props.port)
         this.ws.onopen = (() => {
             this.send({type:"register", payload:props.name})
-        }).bind(this)
-        this.ws.onmessage = ((ev: MessageEvent) => {
-            let msg = JSON.parse(ev.data) as PlayerServerRequest
-            switch (msg.type) {
-                case "register":
-                    this.id = msg.payload.id
-                    this.interval = msg.payload.interval
-                    ipcRenderer.send("player-register", msg.payload.id)
-                    setTimeout(this.statusReport, this.interval)
-                    break
-                case "unregister": 
-                    delete this.id
-                    break
-                case "ping":
-                    this.send({type: "pong", payload:this.state})
-                    break
-                case "statusChange":
-                    this.setState(Object.assign({}, this.state, msg.payload))
-                    break
-            }
         }).bind(this)
     }
 
@@ -87,26 +68,57 @@ class PlayerApp extends React.Component<PlayerConfig, PlayerAppState> {
         this.send({type: "statusChange", payload})
     }
 
-    public componentDidMount() {
-        requestAnimationFrame(() => ipcRenderer.send("player-init"))
-        document.addEventListener("musickitloaded", () => {
-            // let MKInstance = MusicKit.configure({
-            //     developerToken: "",
-            //     app: {
-            //         name: "remote-music",
-            //         build: "1.0.2"
-            //     }
-            // })
-        })
+    public componentDidMount() {     
+        // ipcRenderer.on("session", (event, session: PlayerSessionLike) => {
+        //     this.setState({...this.state, ...session})
+        // })
+        this.ws.onmessage = ((ev: MessageEvent) => {
+            let msg = JSON.parse(ev.data) as PlayerServerRequest
+            switch (msg.type) {
+                case "register": 
+                    this.id = msg.payload.id
+                    this.interval = msg.payload.interval
+                    ipcRenderer.send("player-register", msg.payload.id)
+                    setTimeout(this.statusReport, this.interval)
+                    {
+                        let status = this.statusUpdateQueue.pop()
+                        while (status) {
+                            this.statusUpdate(status)
+                            status = this.statusUpdateQueue.pop()
+                        }
+                    }
+                    break
+                case "unregister": 
+                    delete this.id
+                    break
+                case "ping":
+                    this.send({type: "pong", payload:this.state})
+                    break
+                case "statusChange":
+                    this.setState(Object.assign({}, this.state, msg.payload))
+                    break
+            }
+        }).bind(this)
+        // requestAnimationFrame(() => ipcRenderer.send("player-init"))
+        // document.addEventListener("musickitloaded", () => {
+        // let MKInstance = MusicKit.configure({
+        //     developerToken: "",
+        //     app: {
+        //         name: "remote-music",
+        //         build: "1.0.2"
+        //     }
+        // })
+        // })
     }
 
-    public componentWillUpdate(prevProps: PlayerConfig, prevState: PlayerStatus) {
+    public componentWillUpdate(prevProps: PlayerConfig, prevState: PlayerSessionLike) {
         if (prevState != this.state) {
             let out = {}
             Object.entries(prevState).forEach(([key, val]) => {
                 if (this.state[key] != val) out[key] = val
             })
-            if (out) this.statusUpdate(out)
+            if (out && this.ws.readyState == WebSocket.OPEN) this.statusUpdate(out)
+            else this.statusUpdateQueue.push(out)
         }
     }
 
@@ -155,13 +167,22 @@ class PlayerApp extends React.Component<PlayerConfig, PlayerAppState> {
 
 const AwaitedPlayerApp: FunctionComponent = props => {
     let [config, setConfig] = useState<PlayerConfig | undefined>(undefined)
-    ipcRenderer.once("config", (event, config: PlayerConfig) => setConfig(config))
 
-    return config 
-        ? <PlayerApp type={config.type} port={config.port} address={config.address} name={config.name}/>
-        : <TransparentTitlebar title="Loading">
-            <Player progress={0} queue={[]} playing={false} services={new Map()}/>
-        </TransparentTitlebar>
+    useEffect(() => {
+        ipcRenderer.once("config", (event, config: PlayerConfig) => {console.log(config); setConfig(config)})
+        ipcRenderer.send("player-ready")
+        return () => {ipcRenderer.removeAllListeners("config")}
+    }, [])
+
+    return config ? <PlayerApp type={config.type} port={config.port} address={config.address} name={config.name}/> : <>Loading</>
+
+    // return <div draggable={Boolean(config)}/>
+
+    // return config 
+    //     ? <PlayerApp type={config.type} port={config.port} address={config.address} name={config.name}/>
+    //     : <TransparentTitlebar title="Loading">
+    //         <Player current={null} progress={0} queue={[]} playing={false} services={new Map()}/>
+    //     </TransparentTitlebar>
 }
 
 ReactDOM.render(

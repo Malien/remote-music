@@ -20,7 +20,7 @@ export class RemotePlayer {
     public constructor({ name, status, sender }: { name?: string; status?: PlayerStatus; sender?: Sender } = {}){
         this.id = uuid()
         this.name = name || "Unnamed"
-        this.status = status || {progress: 0, playing: false, queue: []}
+        this.status = status || {progress: 0, playing: false, queue: [], current: null}
         this.sender = sender
         if (typeof sender != "undefined") {
             sender.id = this.id
@@ -48,7 +48,7 @@ export class Client {
 }
 
 export interface PlayerStatus {
-    current?: Song;
+    current: Song | null;
     progress: number;
     playing: boolean;
     queue: Song[];

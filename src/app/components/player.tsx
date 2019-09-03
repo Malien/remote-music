@@ -55,6 +55,7 @@ export const Player: FunctionComponent<PlayerStatus & ServiceList & ControlsDele
     }, [])
 
     let entries = Array<JSX.Element>()
+    console.log(props.services)
     props.services.forEach((availability, service) => {
         entries.push(
             <ServiceDisplay 
@@ -62,6 +63,7 @@ export const Player: FunctionComponent<PlayerStatus & ServiceList & ControlsDele
                 availability={availability} 
                 selected={props.service && props.service == service}
                 click={() => {if (props.onSelect) props.onSelect(service)}}
+                key={entries.length}
             />)
     })
 
@@ -87,7 +89,7 @@ export const SongQueue: FunctionComponent<{songs: Song[]}> = ({songs}) =>
         <span className="player-queue-title">Next Up:</span>
         <div className="player-padding">
             <ThumbList>
-                {songs.map(song => <SongDisplay song={song}/>)}
+                {songs.map((song, index) => <SongDisplay song={song} key={index}/>)}
             </ThumbList>
         </div>
     </div>
