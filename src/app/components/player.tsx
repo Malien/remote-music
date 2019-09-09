@@ -9,13 +9,13 @@ import { noArtwork } from "./server"
 import { ThumbList, Dropdown } from "./layout"
 
 interface ServiceList {
-    services: Map<Services, ServiceAvailability>;
+    services: {[key: string]: ServiceAvailability};
     service?: Services;
     onSelect?: (service: Services) => void;
 }
 
 interface ServiceDisplayProps {
-    service: Services;
+    service: string;
     availability: ServiceAvailability;
     selected?: boolean;
     click?: (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => void;
@@ -55,14 +55,13 @@ export const Player: FunctionComponent<PlayerStatus & ServiceList & ControlsDele
     }, [])
 
     let entries = Array<JSX.Element>()
-    console.log(props.services)
-    props.services.forEach((availability, service) => {
+    Object.entries(props.services).forEach(([service, availability]) => {
         entries.push(
             <ServiceDisplay 
                 service={service} 
                 availability={availability} 
                 selected={props.service && props.service == service}
-                click={() => {if (props.onSelect) props.onSelect(service)}}
+                click={() => {if (props.onSelect) props.onSelect(Services[service])}}
                 key={entries.length}
             />)
     })

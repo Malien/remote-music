@@ -27,10 +27,24 @@
   "bugs": {
     "url": "https://github.com/Malien/remote-music/issues"
   },
+  "build": {
+    "appId": "com.link0.remote-music",
+    "protocols": {
+      "name": "remote-app",
+      "scemes": [
+        "remote-app"
+      ]
+    },
+    "mac": {
+      "category": "public.remote-music.Reference"
+    },
+    "win": {}
+  },
   "homepage": "https://github.com/Malien/remote-music#readme",
   "devDependencies": {
     "@types/react": "^16.9.2",
     "@types/react-dom": "^16.9.0",
+    "@types/request-promise-native": "^1.0.16",
     "@types/uuid": "^3.4.5",
     "@types/ws": "^6.0.3",
     "@typescript-eslint/eslint-plugin": "^1.13.0",
@@ -53,6 +67,7 @@
   "dependencies": {
     "react": "^16.9.0",
     "react-dom": "^16.9.0",
+    "request-promise-native": "^1.0.7",
     "uuid": "^3.3.3",
     "ws": "^6.2.1"
   },

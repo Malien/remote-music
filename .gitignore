@@ -69,6 +69,13 @@ dist
 #misc
 tmp
 
+# node native module sources/etc.
+build
+binding.gyp
+encode.py
+key
+src/core/keys/keys.cpp
+
 # System files
 .DS_Store
 .Thumbs

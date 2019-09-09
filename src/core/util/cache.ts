@@ -1,5 +1,5 @@
-import { ObservableMap } from "./observable"
 import { EventEmitter } from "events"
+import { ObservableMap } from "./observable"
 
 interface ExistentialContainer<T> {
     value: T;

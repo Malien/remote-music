@@ -2,12 +2,11 @@
 import React, { FunctionComponent, useState, useEffect } from "react"
 import ReactDOM from "react-dom"
 
-import { PlayerStatus, Song, PlayerStatusChange } from "../../shared/components"
+import { PlayerStatusChange } from "../../shared/components"
 import { PlayerConfig } from "../../shared/preferences"
-import { Services, ServiceAvailability } from "../../shared/apis"
-import { PlayerSessionLike } from "../../shared/session";
+import { PlayerSessionLike } from "../../shared/session"
 
-import { TransparentTitlebar, windowResize } from "../components/window"
+import { TransparentTitlebar } from "../components/window"
 import { Player } from "../components/player"
 import { ipcRenderer } from "electron"
 import { PlayerServerRequest } from "./comms"
@@ -18,38 +17,25 @@ interface Req {
 }
 // declare namespace MusicKit {}
 
-class PlayerApp extends React.Component<PlayerConfig, PlayerSessionLike> {
+interface PlayerAppProps {
+    config: PlayerConfig;
+    session: PlayerSessionLike;
+}
+class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
     private ws: WebSocket
     private id?: string
     private interval: number
     private statusUpdateQueue: PlayerStatusChange[] = []
 
-    public constructor(props: PlayerConfig) {
+    public constructor(props: PlayerAppProps) {
         super(props)
-        let song: Song = {
-            title: "Jumpsuit", 
-            album:"Trench", 
-            artist:"twenty one pilots", 
-            artwork:"/Users/yaroslav/Downloads/twenty one pilots - Trench (2018) [ALAC]/cover.jpg", 
-            length:239
-        }
-        this.state = {
-            current: song, 
-            progress: 100, 
-            playing: false, 
-            queue: [song, song, song, song, song, song, song, song, song, song, song, song, song, song, song, song],
-            services: new Map([
-                [Services.spotify, ServiceAvailability.notConnected],
-                [Services.apple, ServiceAvailability.notSupported],
-                [Services.local, ServiceAvailability.notSupported],
-            ])
-        }
+        this.state = props.session
 
         ipcRenderer.on("close", (event) => ipcRenderer.send("session-update", {...this.state}))
 
-        this.ws = new WebSocket(props.address + ":" + props.port)
+        this.ws = new WebSocket(props.config.address + ":" + props.config.port)
         this.ws.onopen = (() => {
-            this.send({type:"register", payload:props.name})
+            this.send({type:"register", payload:props.config.name})
         }).bind(this)
     }
 
@@ -69,9 +55,6 @@ class PlayerApp extends React.Component<PlayerConfig, PlayerSessionLike> {
     }
 
     public componentDidMount() {     
-        // ipcRenderer.on("session", (event, session: PlayerSessionLike) => {
-        //     this.setState({...this.state, ...session})
-        // })
         this.ws.onmessage = ((ev: MessageEvent) => {
             let msg = JSON.parse(ev.data) as PlayerServerRequest
             switch (msg.type) {
@@ -99,19 +82,9 @@ class PlayerApp extends React.Component<PlayerConfig, PlayerSessionLike> {
                     break
             }
         }).bind(this)
-        // requestAnimationFrame(() => ipcRenderer.send("player-init"))
-        // document.addEventListener("musickitloaded", () => {
-        // let MKInstance = MusicKit.configure({
-        //     developerToken: "",
-        //     app: {
-        //         name: "remote-music",
-        //         build: "1.0.2"
-        //     }
-        // })
-        // })
     }
 
-    public componentWillUpdate(prevProps: PlayerConfig, prevState: PlayerSessionLike) {
+    public componentWillUpdate(prevProps: PlayerAppProps, prevState: PlayerSessionLike) {
         if (prevState != this.state) {
             let out = {}
             Object.entries(prevState).forEach(([key, val]) => {
@@ -123,7 +96,7 @@ class PlayerApp extends React.Component<PlayerConfig, PlayerSessionLike> {
     }
 
     public render = () => {
-        let title = this.props.name
+        let title = this.props.config.name
         if (this.state.current) {
             title += `: ${this.state.playing ? "playing" : "paused"} ${this.state.current.title}`
         }
@@ -143,7 +116,7 @@ class PlayerApp extends React.Component<PlayerConfig, PlayerSessionLike> {
                     this.setState({...this.state, playing: !this.state.playing})
                 }}
                 onSelect={(service) => {
-                    let availability = this.state.services.get(service)
+                    let availability = this.state.services[service]
                     switch (availability) {
                         case "Connected":
                             this.setState({...this.state, service: service})
@@ -166,37 +139,24 @@ class PlayerApp extends React.Component<PlayerConfig, PlayerSessionLike> {
 }
 
 const AwaitedPlayerApp: FunctionComponent = props => {
-    let [config, setConfig] = useState<PlayerConfig | undefined>(undefined)
+    let [config, setConfig] = useState<PlayerConfig | null>(null)
+    let [session, setSession] = useState<PlayerSessionLike | null>(null)
 
     useEffect(() => {
-        ipcRenderer.once("config", (event, config: PlayerConfig) => {console.log(config); setConfig(config)})
+        ipcRenderer.once("config", (event, config: PlayerConfig) => {setConfig(config)})
+        ipcRenderer.once("session", (event, session: PlayerSessionLike) => {setSession(session)})
         ipcRenderer.send("player-ready")
         return () => {ipcRenderer.removeAllListeners("config")}
     }, [])
 
-    return config ? <PlayerApp type={config.type} port={config.port} address={config.address} name={config.name}/> : <>Loading</>
-
-    // return <div draggable={Boolean(config)}/>
-
-    // return config 
-    //     ? <PlayerApp type={config.type} port={config.port} address={config.address} name={config.name}/>
-    //     : <TransparentTitlebar title="Loading">
-    //         <Player current={null} progress={0} queue={[]} playing={false} services={new Map()}/>
-    //     </TransparentTitlebar>
+    return config && session
+        ? <PlayerApp config={config} session={session}/> 
+        : <TransparentTitlebar title="Loading">
+            <Player current={null} progress={0} queue={[]} playing={false} services={{}}/>
+        </TransparentTitlebar>
 }
 
 ReactDOM.render(
     <AwaitedPlayerApp/>,
     document.getElementById("mount")
 )
-
-// ipcRenderer.once("config", (event, config: PlayerConfig) => {
-//     ReactDOM.render(
-//         // <TitlebarWindow>
-//         <PlayerApp type={config.type} port={config.port} address={config.address} name={config.name}/>
-//         // </TitlebarWindow>
-//         ,document.getElementById("mount")
-//     )
-// }).once("service-data", console.log)
-
-// window.addEventListener("resize", windowResize)

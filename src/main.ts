@@ -7,7 +7,6 @@ import pref, {Preferences, PrefConstructorArgs, ClientConfig, PlayerConfig} from
 import Session, { PlayerSession, PlayerSessionLike } from "./shared/session"
 import { PlayerServer, ClientServer } from "./core/server/server"
 import { interconnectFrom } from "./core/server/util"
-
 let requireSetup = !pref.canBeMerged(pref.path)
 
 let player: PlayerServer
@@ -142,6 +141,9 @@ function clientWin(config: ClientConfig, id: string) {
     return clientWin
 }
 
+app.requestSingleInstanceLock()
+app.setAsDefaultProtocolClient("remote-music")
+
 app.on("ready", async () => {
     console.log(pref.path)
     if (requireSetup) {
@@ -197,3 +199,6 @@ app.on("activate", (event, hasVisibleWindows) => {
         if (preferences.client) clientWin(preferences.client.client, id)
     })
 })
+
+//TODO: listen for macOS url events
+// app.addListener("open-url", )
