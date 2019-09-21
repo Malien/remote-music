@@ -10,7 +10,7 @@
     "clear": "rm -rf dist",
     "remove-pref-mac": "rm ~/Library/Preferences/remote-music-preference.json",
     "react-devtools": "react-devtools",
-    "restyle": "(mkdir -p dist/app/views & mkdir -p dist/app/styles); (cp -R src/app/styles/ dist/app/styles & find src/app/views ! \\( -name \"*.ts\" -o -name \"*.tsx\" \\) -type f -exec cp -fR {} dist/app/views/ \\;)",
+    "restyle": "(mkdir -p dist/app/views & mkdir -p dist/app/styles & mkdir -p dist/core/keys) & wait; (cp -R src/app/styles/ dist/app/styles & find src/app/views ! \\( -name \"*.ts\" -o -name \"*.tsx\" \\) -type f -exec cp -fR {} dist/app/views/ \\; & cp src/core/keys/index.js dist/core/keys & cp bin/darwin-x64-73/remote-music.node dist/core/keys/keys.node)",
     "build": "(tsc --build tsconfig.core.json & tsc --build tsconfig.app.json & wait; echo \"Typescript compilation finished!\n\") & npm run restyle & wait"
   },
   "repository": {
@@ -51,6 +51,7 @@
     "@typescript-eslint/parser": "^1.13.0",
     "electron": "^6.0.4",
     "electron-packager": "^13.1.1",
+    "electron-rebuild": "^1.8.6",
     "electron-reload": "^1.5.0",
     "eslint": "^5.16.0",
     "eslint-plugin-react": "^7.14.3",

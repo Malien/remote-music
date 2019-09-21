@@ -74,6 +74,7 @@ build
 binding.gyp
 encode.py
 key
+bin
 src/core/keys/keys.cpp
 
 # System files

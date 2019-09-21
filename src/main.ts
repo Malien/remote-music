@@ -7,6 +7,7 @@ import pref, {Preferences, PrefConstructorArgs, ClientConfig, PlayerConfig} from
 import Session, { PlayerSession, PlayerSessionLike } from "./shared/session"
 import { PlayerServer, ClientServer } from "./core/server/server"
 import { interconnectFrom } from "./core/server/util"
+import { authorize, Scopes } from "./shared/apis/spotify"
 let requireSetup = !pref.canBeMerged(pref.path)
 
 let player: PlayerServer
@@ -145,6 +146,7 @@ app.requestSingleInstanceLock()
 app.setAsDefaultProtocolClient("remote-music")
 
 app.on("ready", async () => {
+    authorize([Scopes.userLibraryRead, Scopes.streaming])
     console.log(pref.path)
     if (requireSetup) {
         try {

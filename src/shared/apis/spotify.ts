@@ -1,5 +1,8 @@
+/* eslint-disable @typescript-eslint/camelcase */
 import request from "request-promise-native"
 import { BrowserWindow } from "electron"
+
+import Keys from "../../core/keys"
 
 const spotifyID = "549b0471f277418683dddd8220e2672c"
 
@@ -16,6 +19,14 @@ export interface AuthCodeResponse {
     code?: string;
     error?: string;
     state: string;
+}
+
+interface AuthTokenRequest {
+    grant_type: string;
+    code: string;
+    redirect_uri: string;
+    client_id?: string;
+    client_secret?: string;
 }
 
 export enum Scopes {
@@ -79,10 +90,24 @@ export function callbackListener(res: AuthCodeResponse) {
     let authWin = openAuthWindows[res.state]
     if (authWin) authWin.close()
     delete openAuthWindows[res.state]
+
+    console.log(res)
     
     if (res.error) {
         console.error(`Spotify: ${res.error}`)
     } else if (res.code) {
-        //TODO: make post request and process given token
+        let req: AuthTokenRequest = {
+            grant_type: "authorization_code",
+            code: res.code,
+            redirect_uri: "remote-music://callback/spotify",
+            client_id: spotifyID,
+            client_secret: Keys.spotify()
+        }
+        request.post("https://accounts.spotify.com/api/token", {form: req})
+            .then(res => {
+                console.log(res)
+            }, rej => {
+                console.error(rej)
+            }).catch(console.error)
     }
 }
