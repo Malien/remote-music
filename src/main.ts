@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { BrowserWindow, app, ipcMain, Event, IpcMainEvent } from "electron"
+import { BrowserWindow, app, ipcMain, IpcMainEvent } from "electron"
 require("electron-reload")(__dirname, {electron: require("./../node_modules/electron")})
 import { platform } from "os"
 
-import pref, {Preferences, PrefConstructorArgs, ClientConfig, PlayerConfig} from "./shared/preferences"
+import pref, {Preferences, PrefConstructorArgs, ClientConfig, PlayerConfig, ServerType} from "./shared/preferences"
 import Session, { PlayerSession, PlayerSessionLike } from "./shared/session"
 import { PlayerServer, ClientServer } from "./core/server/server"
 import { interconnectFrom } from "./core/server/util"
-import { authorize, Scopes } from "./shared/apis/spotify"
+import { Spotify } from "./shared/apis"
+import { sendViaClient } from "./processComms"
 let requireSetup = !pref.canBeMerged(pref.path)
 
 let player: PlayerServer
@@ -64,6 +65,7 @@ async function firstTimeSetup() {
     })
 }
 
+//FIXME: why did this stopped working?
 function selectionMenu(config: ClientConfig, onSelection: (id: string) => void) {
     let selectionWin = new BrowserWindow({
         height: 500,
@@ -81,7 +83,7 @@ function selectionMenu(config: ClientConfig, onSelection: (id: string) => void) 
     }).on("focus", () => {
         selectionWin.webContents.send("window-focus")
     })
-    // selectionWin.loadFile("./dist/app/views/selection.html")
+    selectionWin.loadFile("./dist/app/views/selection.html")
     selectionWin.webContents.on("dom-ready", () => {selectionWin.webContents.send("config", config)})
     selectionWin.show()
     ipcMain.on("selection-select", (event: IpcMainEvent, id: string) => {
@@ -116,6 +118,19 @@ function playerWindow(config: PlayerConfig) {
         if (playerWin.webContents == event.sender) playerWin.show()
     }).on("session-update", (event, session: PlayerSessionLike) => {
         Session.save(Session.path, session)
+    }).on("player-auth-request", async (event, service) => {
+        if (playerWin.webContents == event.sender)
+            if (service === "spotify") {
+                let tokens = await Spotify.authorize([Spotify.Scopes.userLibraryRead, Spotify.Scopes.streaming])
+                playerWin.webContents.send("auth-token", "spotify", tokens)
+                if (preferences.client) sendViaClient(preferences.client.client, {
+                    type: "storeToken", 
+                    payload: {
+                        service: "spotify",
+                        refreshToken: tokens.refreshToken
+                    }
+                })
+            }
     })
     playerWin.loadFile("./dist/app/views/player.html")
     ipcMain.on("player-ready", (event) => {
@@ -146,7 +161,6 @@ app.requestSingleInstanceLock()
 app.setAsDefaultProtocolClient("remote-music")
 
 app.on("ready", async () => {
-    authorize([Scopes.userLibraryRead, Scopes.streaming])
     console.log(pref.path)
     if (requireSetup) {
         try {

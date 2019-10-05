@@ -9,7 +9,7 @@ import { PlayerStatus } from "../../shared/components"
 import { List, LoadingArea } from "../components/layout"
 import { PlayerStats, PlayerStatsProps, CompactPlayerStats } from "../components/server"
 import { Toolbar, windowResize } from "../components/window"
-import { ClientServerResponse } from "./comms"
+import { ClientServerResponse } from "../../shared/comms"
 
 function strChecksum(str: string): number {
     let s = 0
