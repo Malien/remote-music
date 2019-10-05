@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/camelcase */
 import request from "request-promise-native"
 import { BrowserWindow } from "electron"
+import { doneServing, servePage, redirectURI } from "./confirmation"
+import url from "url"
 
 import Keys from "../../core/keys"
+import { AuthTokensBundle } from "./common"
 
 const spotifyID = "549b0471f277418683dddd8220e2672c"
 
@@ -59,37 +62,16 @@ export function authorizeURL({clientId, responseType, redirectUri, state, scope,
     return `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=${responseType}&redirect_uri=${encodeURIComponent(redirectUri)}${state ? `&state=${state}` : ""}${scope ? `&scope=${encodeURIComponent(scope.reduce<string>((prev, cur) => prev + " " + cur, ""))}`: ""}${showDialog ? `&show_dialog=${showDialog}` : ""}`
 }
 
+
 let authCount = 0
 let openAuthWindows: {[key: string]: BrowserWindow | undefined} = {}
-export function authorize(scopes: Scopes[]) {
-    let req: AuthRequest = {
-        clientId: spotifyID,
-        responseType: "code",
-        redirectUri: "remote-music://callback/spotify",
-        state: String(authCount++),
-        scope: scopes
-    }
-    let queryString = authorizeURL(req)
-    let authWin = new BrowserWindow({
-        width: 400,
-        height: 600,
-        resizable: false,
-        title: "Spotify authorization",
-        webPreferences: {
-            nodeIntegration: false, 
-            enableRemoteModule: false,
-            sandbox: true
-        }
-    })
-    authWin.loadURL(queryString)
-    authWin.webContents.on("dom-ready", () => authWin.show())
-    authWin[authCount] = authWin
-}
-
-export function callbackListener(res: AuthCodeResponse) {
+export async function callbackListener(res: AuthCodeResponse) {
+    doneServing()
     let authWin = openAuthWindows[res.state]
-    if (authWin) authWin.close()
-    delete openAuthWindows[res.state]
+    if (authWin) {
+        authWin.close()
+        delete openAuthWindows[res.state]
+    }
 
     console.log(res)
     
@@ -99,9 +81,9 @@ export function callbackListener(res: AuthCodeResponse) {
         let req: AuthTokenRequest = {
             grant_type: "authorization_code",
             code: res.code,
-            redirect_uri: "remote-music://callback/spotify",
+            redirect_uri: redirectURI,
             client_id: spotifyID,
-            client_secret: Keys.spotify()
+            client_secret: await Keys.spotify()
         }
         request.post("https://accounts.spotify.com/api/token", {form: req})
             .then(res => {
@@ -110,4 +92,52 @@ export function callbackListener(res: AuthCodeResponse) {
                 console.error(rej)
             }).catch(console.error)
     }
+}
+
+export async function authorize(scopes: Scopes[]): Promise<AuthTokensBundle> {
+    return new Promise<AuthTokensBundle>((resolve, reject) => {
+        servePage()
+        let req: AuthRequest = {
+            clientId: spotifyID,
+            responseType: "code",
+            redirectUri: redirectURI,
+            state: String(authCount++),
+            scope: scopes
+        }
+        let queryString = authorizeURL(req)
+        let authWin = new BrowserWindow({
+            width: 400,
+            height: 600,
+            resizable: true,
+            title: "Spotify authorization",
+            webPreferences: {
+                nodeIntegration: true, 
+                enableRemoteModule: false,
+                sandbox: true
+            }
+        })
+        authWin.webContents.on("will-redirect", async (event, to) => {
+            let params: AuthCodeResponse = url.parse(to, true).query as any
+            doneServing()
+            
+            if (params.error) {
+                reject(`Spotify: ${params.error}`)
+            } else if (params.code) {
+                let req: AuthTokenRequest = {
+                    grant_type: "authorization_code",
+                    code: params.code,
+                    redirect_uri: redirectURI,
+                    client_id: spotifyID,
+                    client_secret: await Keys.spotify()
+                }
+                request.post("https://accounts.spotify.com/api/token", {form: req})
+                    .then(res => {
+                        resolve(res)
+                    }, reject).catch(reject)
+            }
+            authWin.close()
+        })
+        authWin.loadURL(queryString)
+        authWin.webContents.on("dom-ready", () => authWin.show())
+    })
 }

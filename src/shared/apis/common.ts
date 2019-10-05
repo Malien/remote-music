@@ -1,4 +1,4 @@
-import { EventEmitter } from "events"
+// import { EventEmitter } from "events"
 
 export enum ServiceAvailability{
     connected = "Connected", 
@@ -12,12 +12,18 @@ export enum Services {
     local = "Local Machine"
 }
 
-interface ServiceEmitterProtocol {
-    on(event: "spotify-connect", listener: (token: string, expiresIn: number, refreshable: boolean) => void): this;
-    off(event: "spotify-connect", listener: (token: string, expiresIn: number, refreshable: boolean) => void): this;
-    addListener(event: "spotify-connect", listener: (token: string, expiresIn: number, refreshable: boolean) => void): this;
-    removeListener(event: "spotify-connect", listener: (token: string, expiresIn: number, refreshable: boolean) => void): this;
-    emit(event: "spotify-connect", token: string, expiresIn: number, refreshable: boolean): boolean;
+export interface AuthTokensBundle {
+    token: string;
+    ttl: number;
+    refreshToken: string;
 }
 
-export const ServiceEmitter: ServiceEmitterProtocol = new EventEmitter()
+// interface ServiceEmitterProtocol {
+//     on(event: "spotify-connect", listener: (token: string, expiresIn: number, refreshable: boolean) => void): this;
+//     off(event: "spotify-connect", listener: (token: string, expiresIn: number, refreshable: boolean) => void): this;
+//     addListener(event: "spotify-connect", listener: (token: string, expiresIn: number, refreshable: boolean) => void): this;
+//     removeListener(event: "spotify-connect", listener: (token: string, expiresIn: number, refreshable: boolean) => void): this;
+//     emit(event: "spotify-connect", token: string, expiresIn: number, refreshable: boolean): boolean;
+// }
+
+// export const ServiceEmitter: ServiceEmitterProtocol = new EventEmitter()

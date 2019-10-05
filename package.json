@@ -10,8 +10,8 @@
     "clear": "rm -rf dist",
     "remove-pref-mac": "rm ~/Library/Preferences/remote-music-preference.json",
     "react-devtools": "react-devtools",
-    "restyle": "(mkdir -p dist/app/views & mkdir -p dist/app/styles & mkdir -p dist/core/keys) & wait; (cp -R src/app/styles/ dist/app/styles & find src/app/views ! \\( -name \"*.ts\" -o -name \"*.tsx\" \\) -type f -exec cp -fR {} dist/app/views/ \\; & cp src/core/keys/index.js dist/core/keys & cp bin/darwin-x64-73/remote-music.node dist/core/keys/keys.node)",
-    "build": "(tsc --build tsconfig.core.json & tsc --build tsconfig.app.json & wait; echo \"Typescript compilation finished!\n\") & npm run restyle & wait"
+    "copy": "(mkdir -p dist/app/views & mkdir -p dist/app/styles & mkdir -p dist/core/keys) & wait; (cp -R src/app/styles/ dist/app/styles & find src/app/views ! \\( -name \"*.ts\" -o -name \"*.tsx\" \\) -type f -exec cp -fR {} dist/app/views/ \\; & cp src/core/keys/*.js dist/core/keys & cp bin/darwin-x64-73/remote-music.node dist/core/keys/keys.node)",
+    "build": "(tsc --build tsconfig.core.json & tsc --build tsconfig.app.json & wait; echo \"Typescript compilation finished!\n\") & npm run copy & wait"
   },
   "repository": {
     "type": "git",
