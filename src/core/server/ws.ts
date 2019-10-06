@@ -1,7 +1,6 @@
 import { PlayerServerAdapter, StreamingClientServerAdapter } from "./adapters"
 import * as WebSocket from "ws"
 import { EventEmitter } from "events"
-import { ClientServerRequestType } from "../../shared/comms"
 
 interface WSRequest {
     type: string;

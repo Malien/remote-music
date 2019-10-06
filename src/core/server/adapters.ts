@@ -79,8 +79,8 @@ export interface ClientServerAdapter {
     emit(event: "playerStatus",             id: string, sender: Sender, queueLimit?: number): boolean;
     emit(event: "statusChange",             id: string, statusChange: PlayerStatusChange): boolean;
     emit(event: "queueUp",                  id: string, position: number, queue: Song[]): boolean;
-    emit(event: "serviceToken",             listener: (service: string, token: string) => void): this;
-    emit(event: "tokenTransfer",            listener: (service: string, ids: string[]) => void): this;
+    emit(event: "serviceToken",             service: string, token: string): boolean;
+    emit(event: "tokenTransfer",            service: string, ids: string[]): boolean;
     emit(event: string | symbol,         ...args: any): boolean;
 }
 
@@ -146,7 +146,7 @@ export interface StreamingClientServerAdapter extends ClientServerAdapter {
     emit(event: "subscriptionStatus",           id: string, sender: Sender): boolean;
     emit(event: "subscriptions",                sender: Sender): boolean;
     emit(event: "close",                        sender: Sender): boolean;
-    emit(event: "serviceToken",                 listener: (service: string, token: string) => void): this;
-    emit(event: "tokenTransfer",                listener: (service: string, ids: string[]) => void): this;
+    emit(event: "serviceToken",                 service: string, token: string): boolean;
+    emit(event: "tokenTransfer",                service: string, ids: string[]): boolean;
     emit(event: string | symbol,             ...args: any): boolean;
 }
