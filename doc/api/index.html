@@ -146,6 +146,29 @@
                         <p>{<br>    "type":"queueUp",<br>    "payload":{<br>        "id":"player-id",<br>        "position":0, <i>// position in queue where to insert new song</i><br>        "songs":[<br>            {<i>/**Song**/</i>},<br>            …<br>        ]<br>    }<br>}</p>
                     </div>
                 </li>
+                <li>
+                    <h3>serviceToken</h3>
+                    <p>
+                        Store refresh token to a music service on the server to be transfered to different clients. New values will override previous set for such service
+                    </p>
+                    <p>
+                        If you want to invalidate service's token send <val>null</val> as a refresh token
+                    </p>
+                    <div class="example-box">
+                        <h4>Client request</h4>
+                        <p>{<br>    "type":"serviceToken",<br>    "payload": {<br>        "service":"name-of-a-service",<br>        "token":"refresh-token-to-be-synced"<br>    }<br>}</p>
+                    </div>
+                </li>
+                <li>
+                    <h3>tokenTransfer</h3>
+                    <p>
+                        Transfer currently saved service token to a list of specified players. If token sent is <val>undefined</val> or <val>null</val> currently set player token will be invalidated
+                    </p>
+                    <div class="example-box">
+                        <h4>Client request</h4>
+                        <p>{<br>    "type":"tokenTransfer",<br>    "payload": {<br>        "service":"name-of-a-service",<br>        "ids":[<br>            "id-of-a-player1",<br>            "id-of-a-player2"<br>        ]<br>    }<br>}</p>
+                    </div>
+                </li>
             </ul>
         </div>
         <div class="content">
@@ -248,6 +271,16 @@
                 <h4>Client response</h4>
                 <p>{<br>    "type":"statusChange",<br>    "payload":{<br>        "current": {<br>            "title":"Doom Days",<br>            "artist":"Bastille",<br>            "album":"Doom Days",<br>            "length":140, // length of song in seconds<br>            "artwork":"http://url-to-artwork" //Optional<br>            "metadata":{/**additional metadata**/} //Optional<br>        },<br>        "progress": 130, // current timestamp in seconds<br>        "playing": true, // current play state<br>        "queue": [<br>            {/** Song **/},<br>            …<br>        ] // the list of queued up songs<br>    }<br>}</p>
             </div>
+            <h3>Token transfer</h3>
+            <p>
+                Server can promt player to get a new refresh token for a service specified. 
+                If current token is invalid, player can send <val>statusChange</val> 
+                with a service info field for a service set to <val>1</val>.
+            </p>
+            <div class="example-box">
+                <h4>Server "tokenTransfer" event</h4>
+                <p>{<br>    "type":"tokenTransfer",<br>    "payload":{<br>        "service":"service-name",<br>        "token":"refresh-token"<br>    }<br>}</p>
+            </div>
         </div>
         <div class="content">
             <h2>Object reference</h2>
@@ -321,6 +354,11 @@
                     <td><a href="#def-Song">Song[]</a></td>
                     <td>List of songs in queue</td>
                 </tr>
+                <tr>
+                    <td>services</td>
+                    <td>{string: number}</td>
+                    <td>string-number pairs where key is service name and value is<br> 0 if service unathorized,<br>1 if service token is invalid and <br>2 if service is authorized</td>
+                </tr>
             </table>
             <h3 id="def-client-change">Player change for client requests</h3>
             <table>
@@ -354,6 +392,11 @@
                     <td><a href="#def-Song">Song[]</a></td>
                     <td>List of songs in queue</td>
                 </tr>
+                <tr>
+                    <td>services?</td>
+                    <td>{string: number}</td>
+                    <td>string-number pairs where key is service name and value is<br> 0 if service unathorized,<br>1 if service token is invalid and <br>2 if service is authorized</td>
+                </tr>
             </table>
             <h3 id="def-player-status">Player status for player requests</h3>
             <table>
@@ -382,6 +425,11 @@
                     <td><a href="#def-Song">Song[]</a></td>
                     <td>List of songs in queue</td>
                 </tr>
+                <tr>
+                    <td>services</td>
+                    <td>{string: number}</td>
+                    <td>string-number pairs where key is service name and value is<br> 0 if service unathorized,<br>1 if service token is invalid and <br>2 if service is authorized</td>
+                </tr>
             </table>
             <h3 id="def-player-change">Player change for player requests</h3>
             <table>
@@ -409,6 +457,11 @@
                     <td>queue?</td>
                     <td><a href="#def-Song">Song[]</a></td>
                     <td>List of songs in queue</td>
+                </tr>
+                <tr>
+                    <td>services?</td>
+                    <td>{string: number}</td>
+                    <td>string-number pairs where key is service name and value is<br> 0 if service unathorized,<br>1 if service token is invalid and <br>2 if service is authorized</td>
                 </tr>
             </table>
         </div>
