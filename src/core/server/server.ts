@@ -1,7 +1,7 @@
 import { PlayerServerAdapter, ClientServerAdapter, StreamingClientServerAdapter } from "./adapters"
 import { RemotePlayer, Sender } from "../../shared/components"
 import { Cache } from "../util/cache"
-import { getPassword, setPassword } from "keytar"
+import { getPassword, setPassword, deletePassword } from "keytar"
 import { PlayerServerResponse } from "../../shared/comms"
 
 function sendObj(this: Sender, msg: Record<string, any>, callback?: (...args: any[]) => any): void {
@@ -113,7 +113,11 @@ export class ClientServer {
                 cache.notify(id)
             }
         }).on("serviceToken", (service, token) => {
-            setPassword("remote-music", service, token)
+            if (token) {
+                setPassword("remote-music", service, token)
+            } else {
+                deletePassword("remote-music", service)
+            }
         }).on("tokenTransfer", (service, ids) => {
             getPassword("remote-music", service).then(token => {
                 cache.changeEmitter.emit("token-transfer", service, token, ids)

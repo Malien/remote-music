@@ -47,7 +47,7 @@ export interface ClientServerAdapter {
     on(event: "playerStatus",               listener: (id: string, sender: Sender, queueLimit?: number) => void): this;
     on(event: "statusChange",               listener: (id: string, statusChange: PlayerStatusChange) => void): this;
     on(event: "queueUp",                    listener: (id: string, position: number, queue: Song[]) => void): this;
-    on(event: "serviceToken",               listener: (service: string, token: string) => void): this;
+    on(event: "serviceToken",               listener: (service: string, token: string | null) => void): this;
     on(event: "tokenTransfer",              listener: (service: string, ids: string[]) => void): this;
     on(event: string | symbol,              listener: (...args: any[]) => void): this;
     
@@ -55,7 +55,7 @@ export interface ClientServerAdapter {
     off(event: "playerStatus",              listener: (id: string, sender: Sender, queueLimit?: number) => void): this;
     off(event: "statusChange",              listener: (id: string, statusChange: PlayerStatusChange) => void): this;
     off(event: "queueUp",                   listener: (id: string, position: number, queue: Song[]) => void): this;
-    off(event: "serviceToken",              listener: (service: string, token: string) => void): this;
+    off(event: "serviceToken",              listener: (service: string, token: string | null) => void): this;
     off(event: "tokenTransfer",             listener: (service: string, ids: string[]) => void): this;
     off(event: string | symbol,             listener: (...args: any[]) => void): this;
     
@@ -63,7 +63,7 @@ export interface ClientServerAdapter {
     addListener(event: "playerStatus",      listener: (id: string, sender: Sender, queueLimit?: number) => void): this;
     addListener(event: "statusChange",      listener: (id: string, statusChange: PlayerStatusChange) => void): this;
     addListener(event: "queueUp",           listener: (id: string, position: number, queue: Song[]) => void): this;
-    addListener(event: "serviceToken",      listener: (service: string, token: string) => void): this;
+    addListener(event: "serviceToken",      listener: (service: string, token: string | null) => void): this;
     addListener(event: "tokenTransfer",     listener: (service: string, ids: string[]) => void): this;
     addListener(event: string | symbol,     listener: (...args: any[]) => void): this;
     
@@ -71,7 +71,7 @@ export interface ClientServerAdapter {
     removeListener(event: "playerStatus",   listener: (id: string, sender: Sender, queueLimit?: number) => void): this;
     removeListener(event: "statusChange",   listener: (id: string, statusChange: PlayerStatusChange) => void): this;
     removeListener(event: "queueUp",        listener: (id: string, position: number, queue: Song[]) => void): this;
-    removeListener(event: "serviceToken",   listener: (service: string, token: string) => void): this;
+    removeListener(event: "serviceToken",   listener: (service: string, token: string | null) => void): this;
     removeListener(event: "tokenTransfer",  listener: (service: string, ids: string[]) => void): this;
     removeListener(event: string | symbol,  listener: (...args: any[]) => void): this;
     
@@ -79,7 +79,7 @@ export interface ClientServerAdapter {
     emit(event: "playerStatus",             id: string, sender: Sender, queueLimit?: number): boolean;
     emit(event: "statusChange",             id: string, statusChange: PlayerStatusChange): boolean;
     emit(event: "queueUp",                  id: string, position: number, queue: Song[]): boolean;
-    emit(event: "serviceToken",             service: string, token: string): boolean;
+    emit(event: "serviceToken",             service: string, token: string | null): boolean;
     emit(event: "tokenTransfer",            service: string, ids: string[]): boolean;
     emit(event: string | symbol,         ...args: any): boolean;
 }
@@ -94,7 +94,7 @@ export interface StreamingClientServerAdapter extends ClientServerAdapter {
     on(event: "subscriptionStatus",             listener: (id: string, sender: Sender) => void): this;
     on(event: "subscriptions",                  listener: (sender: Sender) => void): this;
     on(evnet: "close",                          listener: (sender: Sender) => void): this;
-    on(event: "serviceToken",                   listener: (service: string, token: string) => void): this;
+    on(event: "serviceToken",                   listener: (service: string, token: string | null) => void): this;
     on(event: "tokenTransfer",                  listener: (service: string, ids: string[]) => void): this;
     on(event: string | symbol,                  listener: (...args: any[]) => void): this;
     
@@ -107,7 +107,7 @@ export interface StreamingClientServerAdapter extends ClientServerAdapter {
     off(event: "subscriptionStatus",            listener: (id: string, sender: Sender) => void): this;
     off(event: "subscriptions",                 listener: (sender: Sender) => void): this;
     off(evnet: "close",                         listener: (sender: Sender) => void): this;
-    off(event: "serviceToken",                  listener: (service: string, token: string) => void): this;
+    off(event: "serviceToken",                  listener: (service: string, token: string | null) => void): this;
     off(event: "tokenTransfer",                 listener: (service: string, ids: string[]) => void): this;
     off(event: string | symbol,                 listener: (...args: any[]) => void): this;
     
@@ -120,7 +120,7 @@ export interface StreamingClientServerAdapter extends ClientServerAdapter {
     addListener(event: "subscriptionStatus",    listener: (id: string, sender: Sender) => void): this;
     addListener(event: "subscriptions",         listener: (sender: Sender) => void): this;
     addListener(evnet: "close",                 listener: (sender: Sender) => void): this;
-    addListener(event: "serviceToken",          listener: (service: string, token: string) => void): this;
+    addListener(event: "serviceToken",          listener: (service: string, token: string | null) => void): this;
     addListener(event: "tokenTransfer",         listener: (service: string, ids: string[]) => void): this;
     addListener(event: string | symbol,         listener: (...args: any[]) => void): this;
     
@@ -133,7 +133,7 @@ export interface StreamingClientServerAdapter extends ClientServerAdapter {
     removeListener(event: "subscriptionStatus", listener: (id: string, sender: Sender) => void): this;
     removeListener(event: "subscriptions",      listener: (sender: Sender) => void): this;
     removeListener(evnet: "close",              listener: (sender: Sender) => void): this;
-    removeListener(event: "serviceToken",       listener: (service: string, token: string) => void): this;
+    removeListener(event: "serviceToken",       listener: (service: string, token: string | null) => void): this;
     removeListener(event: "tokenTransfer",      listener: (service: string, ids: string[]) => void): this;
     removeListener(event: string | symbol,      listener: (...args: any[]) => void): this;
     
@@ -146,7 +146,7 @@ export interface StreamingClientServerAdapter extends ClientServerAdapter {
     emit(event: "subscriptionStatus",           id: string, sender: Sender): boolean;
     emit(event: "subscriptions",                sender: Sender): boolean;
     emit(event: "close",                        sender: Sender): boolean;
-    emit(event: "serviceToken",                 service: string, token: string): boolean;
+    emit(event: "serviceToken",                 service: string, token: string | null): boolean;
     emit(event: "tokenTransfer",                service: string, ids: string[]): boolean;
     emit(event: string | symbol,             ...args: any): boolean;
 }
