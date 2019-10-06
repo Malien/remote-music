@@ -76,6 +76,7 @@ encode.py
 key
 bin
 src/core/keys/keys.cpp
+src/core/keys/dev.js
 dependencygraph.svg
 
 # System files

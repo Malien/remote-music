@@ -7,7 +7,7 @@ export interface Sender {
     id?: string;
 }
 
-export interface Comparartor<T>{
+export interface Comparartor<T> {
     compare(o1: T, o2: T): number;
 }
 
@@ -17,10 +17,10 @@ export class RemotePlayer {
     public status: PlayerStatus
     public secondChance: boolean = true
     public sender?: Sender
-    public constructor({ name, status, sender }: { name?: string; status?: PlayerStatus; sender?: Sender } = {}){
+    public constructor({ name, status, sender }: { name?: string; status?: PlayerStatus; sender?: Sender } = {}) {
         this.id = uuid()
         this.name = name || "Unnamed"
-        this.status = status || {progress: 0, playing: false, queue: [], current: null}
+        this.status = status || { progress: 0, playing: false, queue: [], current: null, services: {} }
         this.sender = sender
         if (typeof sender != "undefined") {
             sender.id = this.id
@@ -31,7 +31,7 @@ export class RemotePlayer {
 export class Client {
     public verified: boolean
     public id: string
-    public constructor(){
+    public constructor() {
         this.id = uuid()
     }
     // public verify = function(response: Float32Array): boolean {
@@ -47,11 +47,36 @@ export class Client {
     // }
 }
 
+export enum ServiceAvailability {
+    connected = "Connected",
+    notSupported = "Not supported",
+    notConnected = "Not connected",
+    notReachable = "Not reachable"
+}
+export enum Services {
+    apple = "Apple Music",
+    spotify = "Spotify",
+    local = "Local Machine"
+}
+
+export interface AuthTokensBundle {
+    token: string;
+    ttl: number;
+    refreshToken: string;
+}
+
+export enum APIServiceState {
+    unauthorized = 0,
+    ivalid = 1,
+    authorized = 2
+}
+
 export interface PlayerStatus {
     current: Song | null;
     progress: number;
     playing: boolean;
     queue: Song[];
+    services: { [key: string]: APIServiceState };
 }
 
 export interface PlayerStatusChange {

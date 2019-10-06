@@ -2,8 +2,7 @@
 import { ipcRenderer } from "electron"
 import React, { FunctionComponent, Component, RefObject, useEffect, useRef } from "react"
 
-import { PlayerStatus, Song } from "../../shared/components"
-import { ServiceAvailability, Services } from "../../shared/apis"
+import { PlayerStatus, Song, ServiceAvailability, Services } from "../../shared/components"
 
 import { noArtwork } from "./server"
 import { ThumbList, Dropdown } from "./layout"
@@ -19,6 +18,13 @@ interface ServiceDisplayProps {
     availability: ServiceAvailability;
     selected?: boolean;
     click?: (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => void;
+}
+
+interface PlayerProps extends ServiceList, ControlsDelegate, SliderDelegate {
+    current: Song | null;
+    progress: number;
+    playing: boolean;
+    queue: Song[];
 }
 
 export const ServiceDisplay: FunctionComponent<ServiceDisplayProps> = props => {
@@ -39,7 +45,7 @@ export const ServiceDisplay: FunctionComponent<ServiceDisplayProps> = props => {
 }
 ServiceDisplay.displayName = "ServiceDisplay"
 
-export const Player: FunctionComponent<PlayerStatus & ServiceList & ControlsDelegate & SliderDelegate> = props => {
+export const Player: FunctionComponent<PlayerProps> = props => {
     let displayRef = useRef<HTMLDivElement>(null)
     useEffect(() => {
         function resize(ev: UIEvent) {

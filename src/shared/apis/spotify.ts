@@ -5,7 +5,7 @@ import { doneServing, servePage, redirectURI } from "./confirmation"
 import url from "url"
 
 import Keys from "../../core/keys"
-import { AuthTokensBundle } from "./common"
+import { AuthTokensBundle } from "../components"
 
 const spotifyID = "549b0471f277418683dddd8220e2672c"
 

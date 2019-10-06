@@ -1,6 +1,7 @@
 import { PlayerServerAdapter, StreamingClientServerAdapter } from "./adapters"
 import * as WebSocket from "ws"
 import { EventEmitter } from "events"
+import { ClientServerRequestType } from "../../shared/comms"
 
 interface WSRequest {
     type: string;
@@ -42,6 +43,11 @@ export class WSClientServerAdapter extends EventEmitter implements StreamingClie
                         case "queueUp":
                             _this.emit("queueUp", obj.payload.id, obj.payload.position, obj.payload.queue)
                             break
+                        case "serviceToken":
+                            _this.emit("serviceToken", obj.payload.service, obj.payload.token)
+                            break
+                        case "tokenTransfer":
+                            _this.emit("tokenTransfer", obj.payload.service, obj.payload.ids)
                     }
                 } catch (e) {
                     console.error(e)

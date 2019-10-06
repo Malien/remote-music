@@ -1,17 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { FunctionComponent, useState, useEffect } from "react"
 import ReactDOM from "react-dom"
+import { ipcRenderer } from "electron"
 
-import { PlayerStatusChange } from "../../shared/components"
+import { PlayerStatusChange, PlayerStatus, AuthTokensBundle, ServiceAvailability, Services } from "../../shared/components"
 import { PlayerConfig } from "../../shared/preferences"
-import { PlayerSessionLike } from "../../shared/session"
-import { Services } from "../../shared/apis"
+import { PlayerSessionLike, ServiceMap } from "../../shared/session"
+import { PlayerServerRequest } from "../../shared/comms"
 
 import { TransparentTitlebar } from "../components/window"
 import { Player } from "../components/player"
-import { ipcRenderer } from "electron"
-import { PlayerServerRequest } from "../../shared/comms"
-import { AuthTokensBundle } from "../../shared/apis/common"
 
 interface Req {
     type: string;
@@ -26,11 +24,7 @@ interface PlayerAppProps {
 interface ServiceAuthState {
     spotify?: AuthTokensBundle;
 }
-interface PlayerAppState {
-    session: PlayerSessionLike;
-    serivces: ServiceAuthState;
-}
-class PlayerApp extends React.Component<PlayerAppProps, PlayerAppState> {
+class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
     private ws: WebSocket
     private id?: string
     private interval: number
@@ -38,14 +32,17 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerAppState> {
 
     public constructor(props: PlayerAppProps) {
         super(props)
-        this.state = { session: props.session, serivces: {} }
+        this.state = props.session
 
-        ipcRenderer.on("close", (event) => ipcRenderer.send("session-update", this.state.session))
-        ipcRenderer.on("auth-token", (event, service, bundle: AuthTokensBundle) => {
+        ipcRenderer.on("close", (event) => ipcRenderer.send("session-update", this.state))
+        ipcRenderer.on("auth-token", (event, service, { token, refreshToken, ttl }: AuthTokensBundle) => {
             if (service === "spoitify") {
-                let serivces = { ...this.state.serivces, spotify: bundle }
-                this.setState({ serivces, session: this.state.session })
-                setTimeout(this.refreshSpotifyToken, bundle.ttl * 1000 * 0.9)
+                let services: ServiceMap = { 
+                    ...this.state.services, 
+                    "spotify": { availability: ServiceAvailability.connected, token, ttl, refreshToken} 
+                }
+                this.setState({ ...this.state, services })
+                setTimeout(this.refreshSpotifyToken, ttl * 1000 * 0.9)
             }
         })
 
@@ -66,14 +63,14 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerAppState> {
 
     private refreshSpotifyToken() { }
 
-    private updateSession(newData: any) {
-        let session = { ...this.state.session, ...newData }
-        this.setState({ session, serivces: this.state.serivces })
+    private updateStatus(newData: any) {
+        let status: PlayerStatus = { ...this.state.status, ...newData }
+        this.setState({ ...this.state, status })
     }
 
     private statusReport() {
         if (this.id) {
-            this.ws.send(JSON.stringify({ type: "heartbeat", payload: this.state.session }))
+            this.ws.send(JSON.stringify({ type: "heartbeat", payload: this.state.status }))
             setTimeout(this.statusReport, this.interval)
         }
     }
@@ -107,20 +104,20 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerAppState> {
                     delete this.id
                     break
                 case "ping":
-                    this.send({ type: "pong", payload: this.state.session })
+                    this.send({ type: "pong", payload: this.state.status })
                     break
                 case "statusChange":
-                    this.setState(Object.assign({}, this.state.session, msg.payload))
+                    this.setState(Object.assign({}, this.state.status, msg.payload))
                     break
             }
         }).bind(this)
     }
 
-    public componentWillUpdate(prevProps: PlayerAppProps, prevState: PlayerAppState) {
-        if (prevState != this.state) {
+    public componentWillUpdate(prevProps: PlayerAppProps, prevState: PlayerSessionLike) {
+        if (prevState.status != this.state.status) {
             let out = {}
-            Object.entries(prevState).forEach(([key, val]) => {
-                if (this.state[key] != val) out[key] = val
+            Object.entries(prevState.status).forEach(([key, val]) => {
+                if (this.state.status[key] != val) out[key] = val
             })
             if (out && this.ws.readyState == WebSocket.OPEN) this.statusUpdate(out)
             else this.statusUpdateQueue.push(out)
@@ -129,29 +126,32 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerAppState> {
 
     public render = () => {
         let title = this.props.config.name
-        if (this.state.session.current) {
-            title += `: ${this.state.session.playing ? "playing" : "paused"} ${this.state.session.current.title}`
-        }
+        if (this.state.status.current) {
+            title += `: ${this.state.status.playing ? "playing" : "paused"} ${this.state.status.current.title}`
+        } 
         return <TransparentTitlebar title={title}>
             <Player
-                current={this.state.session.current}
-                progress={this.state.session.progress}
-                playing={this.state.session.playing}
-                queue={this.state.session.queue}
-                services={this.state.session.services}
-                service={this.state.session.service}
+                current={this.state.status.current}
+                progress={this.state.status.progress}
+                playing={this.state.status.playing}
+                queue={this.state.status.queue}
+                services={Object.fromEntries(
+                    Object.entries(this.state.services)
+                        .map(([service, info]) => [service, info.availability])
+                )}
+                service={this.state.service}
                 onScrub={progress => {
-                    if (this.state.session.current)
-                        this.updateSession({ progress })
+                    if (this.state.status.current)
+                        this.updateStatus({ progress })
                 }}
                 onPlay={() => {
-                    this.updateSession({ playing: !this.state.session.playing })
+                    this.updateStatus({ playing: !this.state.status.playing })
                 }}
                 onSelect={(service) => {
-                    let availability = this.state.session.services[service]
+                    let availability = this.state.services[service].availability
                     switch (availability) {
                         case "Connected":
-                            this.updateSession({ service: service })
+                            this.updateStatus({ service: service })
                             break
                         case "Not connected":
                             switch (service) {

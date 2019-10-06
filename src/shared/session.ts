@@ -1,25 +1,32 @@
 import { writeFile, readFile, PathLike } from "fs"
 import { platform } from "os"
 
-import { PlayerStatus, Song } from "./components"
-import { Services, ServiceAvailability } from "./apis"
+import { PlayerStatus, Song, ServiceAvailability, Services } from "./components"
 
-export interface PlayerSessionLike extends PlayerStatus {
-    services: {[key: string]: ServiceAvailability};
+
+export interface ServiceInfo {
+    availability: ServiceAvailability;
+    token?: string;
+    ttl?: number;
+    refreshToken?: string;
+}
+export interface ServiceMap { 
+    [key: string]: ServiceInfo;
+}
+export interface PlayerSessionLike {
+    status: PlayerStatus;
+    services: ServiceMap;
     service?: Services;
 }
 
 export class PlayerSession implements PlayerSessionLike {
-    public services = {
-        [Services.spotify]: ServiceAvailability.notConnected,
-        [Services.apple]: ServiceAvailability.notSupported,
-        [Services.local]: ServiceAvailability.notSupported
-    }
+    public services = {}
     public service?: Services | undefined
-    public current: Song | null = null;
-    public progress: number = 0;
-    public playing: boolean = false;
-    public queue: Song[] = [];
+    // public current: Song | null = null;
+    // public progress: number = 0;
+    // public playing: boolean = false;
+    // public queue: Song[] = [];
+    public status = { progress: 0, playing: false, queue: [], current: null, services: {} }
 
     public constructor(session?: PlayerSessionLike) {
         if (session) Object.assign(this, session)
@@ -50,7 +57,12 @@ export class PlayerSession implements PlayerSessionLike {
     }
 
     public save(path: PathLike) {
-        writeFile(path, JSON.stringify(this), err => {if (err) console.error(err)})
+        let services: ServiceMap = {}
+        Object.entries<ServiceInfo>(this.services).forEach(([service, info]) => {
+            services[service] = { availability: info.availability, refreshToken: info.refreshToken }
+        })
+        let saveObj: PlayerSessionLike = { services, status: this.status, service: this.service }
+        writeFile(path, JSON.stringify(saveObj), err => { if (err) console.error(err) })
     }
 
     public read(path: PathLike): Promise<PlayerSession> {
@@ -65,7 +77,7 @@ export class PlayerSession implements PlayerSessionLike {
 }
 
 export function save(path: PathLike, session: PlayerSessionLike) {
-    writeFile(path, JSON.stringify(session), err => {if (err) console.error(err)})
+    writeFile(path, JSON.stringify(session), err => { if (err) console.error(err) })
 }
 
 export const read = (path: PathLike): Promise<PlayerSession> => new PlayerSession().read(path)

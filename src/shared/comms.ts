@@ -1,7 +1,7 @@
 export type PlayerServerRequestType = "ping" | "register" | "unregister" | "statusChange"
-export type ClientServerRequestType = "players" | "subscribe" | "playerStatus" | "unsubscribe" | "subscriptionStatus" | "subscriptions" | "queueUp"
+export type ClientServerRequestType = "players" | "subscribe" | "playerStatus" | "unsubscribe" | "subscriptionStatus" | "subscriptions" | "queueUp" | "statusChange" | "tokenTransfer" | "serviceToken"
 
-export type PlayerServerResponseType = "pong" | "register" | "statusChange"
+export type PlayerServerResponseType = "pong" | "register" | "statusChange" | "tokenTransfer"
 export type ClientServerResponseType = "subscription" | "players" | "subscriptions" | "playerStatus"
 
 export interface PlayerServerRequest {
@@ -13,7 +13,7 @@ export interface ClientServerRequest {
     payload?: any;
 }
 
-export interface PlayerServerRespnse {
+export interface PlayerServerResponse {
     type: PlayerServerResponseType;
     payload?: any;
 }

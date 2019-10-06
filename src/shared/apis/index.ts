@@ -1,6 +1,5 @@
 /* eslint-disable no-useless-escape */
 import * as Spotify from "./spotify"
-export { Services, ServiceAvailability } from "./common"
 export { doneServing, servePage } from "./confirmation"
 export { Spotify }
 

@@ -1,6 +1,8 @@
 import { PlayerServerAdapter, ClientServerAdapter, StreamingClientServerAdapter } from "./adapters"
 import { RemotePlayer, Sender } from "../../shared/components"
 import { Cache } from "../util/cache"
+import { getPassword, setPassword } from "keytar"
+import { PlayerServerResponse } from "../../shared/comms"
 
 function sendObj(this: Sender, msg: Record<string, any>, callback?: (...args: any[]) => any): void {
     this.send(JSON.stringify(msg), callback)
@@ -31,8 +33,8 @@ export class PlayerServer {
             let player = new RemotePlayer({ name, sender })
             this.lookuptable.set(player.id, sender)
             this.cache.set(player.id, player)
-            let payload = {id: player.id, interval: this.cache.defaultTTL/2}
-            sendObj.call(sender, {type: "register", payload})
+            let payload = { id: player.id, interval: this.cache.defaultTTL / 2 }
+            sendObj.call(sender, { type: "register", payload })
         }).on("statusChange", (sender, statusChnage) => {
             if (typeof sender.id == "string" && cache.has(sender.id)) {
                 let player = cache.get(sender.id) as RemotePlayer
@@ -56,11 +58,22 @@ export class PlayerServer {
             let sender = player.sender as Sender
             if (player.secondChance) {
                 player.secondChance = false
-                cache.set(key, player, cache.defaultTTL/2)
-                sendObj.call(sender, {type: "ping"})
+                cache.set(key, player, cache.defaultTTL / 2)
+                sendObj.call(sender, { type: "ping" })
             } else {
-                sendObj.call(sender, {type: "unregister"})
+                sendObj.call(sender, { type: "unregister" })
             }
+        })
+        cache.changeEmitter.on("token-transfer", (service: string, token: string, ids: string[]) => {
+            ids.map(this.lookuptable.get).forEach(sender => {
+                if (sender) {
+                    let msg: PlayerServerResponse = {
+                        type: "tokenTransfer",
+                        payload: { service, token }
+                    }
+                    sender.send(JSON.stringify(msg))
+                }
+            })
         })
     }
 }
@@ -75,14 +88,14 @@ export class ClientServer {
             for (let index in keys) {
                 payload[keys[index]] = (_this.cache.get(keys[index]) as RemotePlayer).name
             }
-            sendObj.call(sender, {type: "players", payload})
-        }).on("playerStatus", (id, sender, queueLimit=0) => {
+            sendObj.call(sender, { type: "players", payload })
+        }).on("playerStatus", (id, sender, queueLimit = 0) => {
             //TODO: queueLimit implementation
             if (cache.has(id)) {
-                let player = cache.get(id) as RemotePlayer 
+                let player = cache.get(id) as RemotePlayer
                 let status = player.status
                 let name = player.name
-                sendObj.call(sender, {type:"playerStatus", payload: {id, name, status}})
+                sendObj.call(sender, { type: "playerStatus", payload: { id, name, status } })
             }
         }).on("statusChange", (id, statusChange) => {
             if (cache.has(id)) {
@@ -99,6 +112,12 @@ export class ClientServer {
                 player.status.queue.splice(position, 0, ...queue)
                 cache.notify(id)
             }
+        }).on("serviceToken", (service, token) => {
+            setPassword("remote-music", service, token)
+        }).on("tokenTransfer", (service, ids) => {
+            getPassword("remote-music", service).then(token => {
+                cache.changeEmitter.emit("token-transfer", service, token, ids)
+            })
         })
     }
 }
@@ -121,9 +140,9 @@ export class StreamingClientServer extends ClientServer {
         }).on("unsubscribe", (id, sender) => {
             if (this.subscriptions.has(id)) {
                 let senders = this.subscriptions.get(id) as Sender[]
-                for (let i=0; i<senders.length; i++) {
+                for (let i = 0; i < senders.length; i++) {
                     if (senders[i] == sender) {
-                        senders.splice(i,1)
+                        senders.splice(i, 1)
                         break
                     }
                 }
@@ -134,13 +153,13 @@ export class StreamingClientServer extends ClientServer {
                 let senders = this.subscriptions.get(id) as Sender[]
                 subscribed = senders.includes(sender)
             }
-            sendObj.call(sender, {type:"subscriptionStatus", payload: {id, subscribed}})
+            sendObj.call(sender, { type: "subscriptionStatus", payload: { id, subscribed } })
         }).on("subscriptions", (sender) => {
             let payload: string[] = []
             this.subscriptions.forEach((senders, id) => {
                 if (senders.includes(sender)) payload.push(id)
             })
-            sendObj.call(sender, {type:"subscriptions", payload})
+            sendObj.call(sender, { type: "subscriptions", payload })
         }).on("close", (sender) => {
             for (let key in this.subscriptions.keys()) {
                 let senders = this.subscriptions.get(key) as Sender[]
@@ -153,7 +172,7 @@ export class StreamingClientServer extends ClientServer {
             if (_this.subscriptions.has(key)) {
                 let senders = _this.subscriptions.get(key) as Sender[]
                 senders.forEach((sender) => {
-                    sendObj.call(sender, {type: "subscription", payload: value})
+                    sendObj.call(sender, { type: "subscription", payload: value })
                 })
                 if (value == null) _this.subscriptions.delete(key)
             }
