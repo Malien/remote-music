@@ -1,4 +1,4 @@
-export function spotify(): string
+// export function spotify(): string
 
 //TODO: This is dev-only implementation. If I am planning to ship it, it's better to be written in C++
-export function _spotify(): Promise<string>
+export function spotify(): Promise<string>

@@ -8,9 +8,9 @@ import { noArtwork } from "./server"
 import { ThumbList, Dropdown } from "./layout"
 
 interface ServiceList {
-    services: {[key: string]: ServiceAvailability};
+    services: { [key: string]: { availability: ServiceAvailability; displayName?: string } };
     service?: Services;
-    onSelect?: (service: Services) => void;
+    onSelect?: (service: string) => void;
 }
 
 interface ServiceDisplayProps {
@@ -30,11 +30,11 @@ interface PlayerProps extends ServiceList, ControlsDelegate, SliderDelegate {
 export const ServiceDisplay: FunctionComponent<ServiceDisplayProps> = props => {
     return <>
         <a className="player-service" onClick={props.click}>
-            <input type="checkbox" name={props.service} className="player-service-box" checked={props.selected}/>
+            <input type="checkbox" name={props.service} className="player-service-box" checked={props.selected} />
             <span className="player-service-name">{props.service}</span>
-            <span 
+            <span
                 className={"player-service-status" + (props.availability == ServiceAvailability.connected
-                    ? " player-service-connected" 
+                    ? " player-service-connected"
                     : (props.availability == ServiceAvailability.notConnected
                         ? ""
                         : " player-service-disabled"))}>
@@ -53,7 +53,7 @@ export const Player: FunctionComponent<PlayerProps> = props => {
             if (display) {
                 ipcRenderer.send("player-height", display.clientHeight + 21)
             }
-        } 
+        }
         window.addEventListener("resize", resize)
         return () => {
             window.removeEventListener("resize", resize)
@@ -61,13 +61,13 @@ export const Player: FunctionComponent<PlayerProps> = props => {
     }, [])
 
     let entries = Array<JSX.Element>()
-    Object.entries(props.services).forEach(([service, availability]) => {
+    Object.entries(props.services).forEach(([service, { availability, displayName = service }]) => {
         entries.push(
-            <ServiceDisplay 
-                service={service} 
-                availability={availability} 
+            <ServiceDisplay
+                service={displayName ? displayName : service}
+                availability={availability}
                 selected={props.service && props.service == service}
-                click={() => {if (props.onSelect) props.onSelect(Services[service])}}
+                click={() => { if (props.onSelect) props.onSelect(service) }}
                 key={entries.length}
             />)
     })
@@ -77,11 +77,11 @@ export const Player: FunctionComponent<PlayerProps> = props => {
             <Dropdown title={props.service ? props.service : "Select music provider"}>
                 <ThumbList>{entries}</ThumbList>
             </Dropdown>
-            <img draggable={false}  className="player-display-background" src={props.current ? (props.current.artwork || noArtwork) : noArtwork}/>
+            <img draggable={false} className="player-display-background" src={props.current ? (props.current.artwork || noArtwork) : noArtwork} />
             <img className="player-display-artwork" src={props.current ? (props.current.artwork || noArtwork) : noArtwork} />
             <span className="player-display-title">{props.current ? props.current.title : "No song"}</span>
             <span className="player-display-subtitle">{props.current ? (props.current.artist + " ‒ " + props.current.album) : ""}</span>
-            <Slider onScrub={props.onScrub} timestamp={true} min={0} max={props.current ? props.current.length : 0} val={props.progress}/>
+            <Slider onScrub={props.onScrub} timestamp={true} min={0} max={props.current ? props.current.length : 0} val={props.progress} />
             <MediaControls onPlay={props.onPlay} onNext={props.onNext} onPrev={props.onNext} playing={props.playing}></MediaControls>
         </div>
         <SongQueue songs={props.queue}></SongQueue>
@@ -89,20 +89,20 @@ export const Player: FunctionComponent<PlayerProps> = props => {
 }
 Player.displayName = "Player"
 
-export const SongQueue: FunctionComponent<{songs: Song[]}> = ({songs}) => 
+export const SongQueue: FunctionComponent<{ songs: Song[] }> = ({ songs }) =>
     <div className="player-queue">
         <span className="player-queue-title">Next Up:</span>
         <div className="player-padding">
             <ThumbList>
-                {songs.map((song, index) => <SongDisplay song={song} key={index}/>)}
+                {songs.map((song, index) => <SongDisplay song={song} key={index} />)}
             </ThumbList>
         </div>
     </div>
 SongQueue.displayName = "SongQueue"
 
-export const SongDisplay: FunctionComponent<{song: Song}> = ({song}) => 
+export const SongDisplay: FunctionComponent<{ song: Song }> = ({ song }) =>
     <>
-        <img src={song.artwork || noArtwork} className="player-song-img"/>
+        <img src={song.artwork || noArtwork} className="player-song-img" />
         <div className="player-song-text">
             <span className="player-song-title">{song.title}</span>
             <span className="player-song-subtitle`">{song.artist + " ‒ " + song.album}</span>
@@ -116,11 +116,11 @@ interface ControlsDelegate {
     onPrev?: () => void;
 }
 
-export const MediaControls: FunctionComponent<ControlsDelegate & {playing: boolean}> = props => 
+export const MediaControls: FunctionComponent<ControlsDelegate & { playing: boolean }> = props =>
     (<div className="player-media-controls">
-        <img draggable={false} className="player-media-button" onClick={props.onPrev} src="../../../assets/SVG/controls-prev.svg"/>
-        <img draggable={false} className="player-media-button" onClick={props.onPlay} src={`../../../assets/SVG/controls-${props.playing ? "pause" : "play"}.svg`}/>
-        <img draggable={false} className="player-media-button" onClick={props.onNext} src="../../../assets/SVG/controls-next.svg"/>
+        <img draggable={false} className="player-media-button" onClick={props.onPrev} src="../../../assets/SVG/controls-prev.svg" />
+        <img draggable={false} className="player-media-button" onClick={props.onPlay} src={`../../../assets/SVG/controls-${props.playing ? "pause" : "play"}.svg`} />
+        <img draggable={false} className="player-media-button" onClick={props.onNext} src="../../../assets/SVG/controls-next.svg" />
     </div>)
 MediaControls.displayName = "MediaControlls"
 
@@ -134,7 +134,7 @@ interface SliderProps {
 interface SliderDelegate {
     onScrub?: (val: number) => void;
 }
-export class Slider extends Component<SliderProps & SliderDelegate, {per: number}> {
+export class Slider extends Component<SliderProps & SliderDelegate, { per: number }> {
     private dotRef: RefObject<HTMLDivElement>
     private contRef: RefObject<HTMLDivElement>
     private timeRef: RefObject<HTMLSpanElement>
@@ -146,7 +146,7 @@ export class Slider extends Component<SliderProps & SliderDelegate, {per: number
         this.dotRef = React.createRef()
         this.contRef = React.createRef()
         this.timeRef = React.createRef()
-        this.state = {per: (this.props.val - this.props.min) / (this.props.max - this.props.min)}
+        this.state = { per: (this.props.val - this.props.min) / (this.props.max - this.props.min) }
     }
 
     public componentDidMount() {
@@ -181,8 +181,8 @@ export class Slider extends Component<SliderProps & SliderDelegate, {per: number
         }
     }
 
-    public static getDerivedStateFromProps({val, min, max}: SliderProps, {per}: {per: number}) {
-        return (val - min) / (max - min) == per ? null : {per: (val - min) / (max - min)}
+    public static getDerivedStateFromProps({ val, min, max }: SliderProps, { per }: { per: number }) {
+        return (val - min) / (max - min) == per ? null : { per: (val - min) / (max - min) }
     }
 
     public componentDidUpdate() {
@@ -190,10 +190,10 @@ export class Slider extends Component<SliderProps & SliderDelegate, {per: number
         if (cont) cont.style.setProperty("--val", String(this.state.per))
     }
 
-    public render = () => 
+    public render = () =>
         <div className="player-slider" ref={this.contRef}>
-            <div className="player-slider-fill"/>
-            <div className="player-slider-dot" ref={this.dotRef}/>
+            <div className="player-slider-fill" />
+            <div className="player-slider-dot" ref={this.dotRef} />
             {this.props.timestamp && <>
                 <span className="player-slider-left player-slider-time" ref={this.timeRef}>{this.props.disabled ? "--:--" : `${Math.floor(this.props.val / 60)}:${Math.floor(this.props.val % 60)}`}</span>
                 <span className="player-slider-right player-slider-time">{this.props.disabled ? "--:--" : `${Math.floor(this.props.max / 60)}:${Math.floor(this.props.max % 60)}`}</span>

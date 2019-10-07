@@ -3,9 +3,16 @@ import { RemotePlayer, Sender } from "../../shared/components"
 import { Cache } from "../util/cache"
 import { getPassword, setPassword, deletePassword } from "keytar"
 import { PlayerServerResponse } from "../../shared/comms"
+import WebSocket from "ws"
 
-function sendObj(this: Sender, msg: Record<string, any>, callback?: (...args: any[]) => any): void {
-    this.send(JSON.stringify(msg), callback)
+function sendObj(this: Sender, msg: Record<string, any>, callback?: (...args: any[]) => any): boolean {
+    if (this instanceof WebSocket) {
+        if (this.readyState == this.OPEN) this.send(JSON.stringify(msg), callback)
+        else return false
+    } else {
+        this.send(JSON.stringify(msg), callback)
+    }
+    return true
 }
 
 export class PlayerServer {

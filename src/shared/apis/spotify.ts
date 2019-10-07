@@ -81,16 +81,18 @@ export async function callbackListener(res: AuthCodeResponse) {
         let req: AuthTokenRequest = {
             grant_type: "authorization_code",
             code: res.code,
-            redirect_uri: redirectURI,
-            client_id: spotifyID,
-            client_secret: await Keys.spotify()
+            redirect_uri: redirectURI
         }
-        request.post("https://accounts.spotify.com/api/token", {form: req})
-            .then(res => {
-                console.log(res)
-            }, rej => {
-                console.error(rej)
-            }).catch(console.error)
+        request.post("https://accounts.spotify.com/api/token", {
+            form: req,
+            headers: {
+                Authorization: new Buffer(spotifyID + ":" + await Keys.spotify()).toString("base64")
+            }
+        }).then(res => {
+            console.log(res)
+        }, rej => {
+            console.error(rej)
+        }).catch(console.error)
     }
 }
 

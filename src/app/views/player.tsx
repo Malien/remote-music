@@ -21,9 +21,6 @@ interface PlayerAppProps {
     config: PlayerConfig;
     session: PlayerSessionLike;
 }
-interface ServiceAuthState {
-    spotify?: AuthTokensBundle;
-}
 class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
     private ws: WebSocket
     private id?: string
@@ -38,9 +35,9 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
         ipcRenderer.on("auth-token", (event, service, { token, refreshToken, ttl }: AuthTokensBundle) => {
             alert(service + ": " + token)
             if (service === "spoitify") {
-                let services: ServiceMap = { 
-                    ...this.state.services, 
-                    "spotify": { availability: ServiceAvailability.connected, token, ttl, refreshToken} 
+                let services: ServiceMap = {
+                    ...this.state.services,
+                    "spotify": { availability: ServiceAvailability.connected, token, ttl, refreshToken }
                 }
                 this.setState({ ...this.state, services })
                 setTimeout(this.refreshSpotifyToken, ttl * 1000 * 0.9)
@@ -51,6 +48,8 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
         this.ws.onopen = (() => {
             this.send({ type: "register", payload: props.config.name })
         }).bind(this)
+
+        this.onServiceSelect = this.onServiceSelect.bind(this)
     }
 
     private auth(service: Services) {
@@ -62,7 +61,9 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
         }
     }
 
-    private refreshSpotifyToken() { }
+    private refreshSpotifyToken() {
+
+    }
 
     private updateStatus(newData: any) {
         let status: PlayerStatus = { ...this.state.status, ...newData }
@@ -82,6 +83,21 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
 
     private statusUpdate(payload: PlayerStatusChange) {
         this.send({ type: "statusChange", payload })
+    }
+
+    private onServiceSelect(service: string) {
+        let availability = this.state.services[service].availability
+        switch (availability) {
+            case "Connected":
+                this.updateStatus({ service: service })
+                break
+            case "Not connected":
+                this.auth(Services[service])
+                break
+            case "Not supported":
+            case "Not reachable":
+            default:
+        }
     }
 
     public componentDidMount() {
@@ -129,7 +145,7 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
         let title = this.props.config.name
         if (this.state.status.current) {
             title += `: ${this.state.status.playing ? "playing" : "paused"} ${this.state.status.current.title}`
-        } 
+        }
         return <TransparentTitlebar title={title}>
             <Player
                 current={this.state.status.current}
@@ -138,7 +154,7 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
                 queue={this.state.status.queue}
                 services={Object.fromEntries(
                     Object.entries(this.state.services)
-                        .map(([service, info]) => [service, info.availability])
+                        .map(([service, info]) => [service, { availability: info.availability, displayName: Services[service] }])
                 )}
                 service={this.state.service}
                 onScrub={progress => {
@@ -148,25 +164,7 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
                 onPlay={() => {
                     this.updateStatus({ playing: !this.state.status.playing })
                 }}
-                onSelect={(service) => {
-                    let availability = this.state.services[service].availability
-                    switch (availability) {
-                        case "Connected":
-                            this.updateStatus({ service: service })
-                            break
-                        case "Not connected":
-                            switch (service) {
-                                case "Spotify":
-                                    break
-                                case "Apple Music":
-                                case "Local Machine":
-                            }
-                            break
-                        case "Not supported":
-                        case "Not reachable":
-                        case undefined:
-                    }
-                }} />
+                onSelect={this.onServiceSelect} />
         </TransparentTitlebar>
     }
 }

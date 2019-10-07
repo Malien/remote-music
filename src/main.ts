@@ -140,8 +140,6 @@ function playerWindow(config: PlayerConfig) {
                 .catch(err => {playerWin.webContents.send("session", new PlayerSession())})
         }
     })
-    // RemoteUse.notify(playerWin.webContents)
-    // playerWin.show()
     return playerWin
 }
 
@@ -176,7 +174,7 @@ app.on("ready", async () => {
     console.log(preferences)
     //Server creation
     if (preferences.server) {
-        ({client, player} = interconnectFrom(preferences.server))
+        [client, player] = interconnectFrom(preferences.server)
     }
     //Selection menu creation
     if (preferences.client) {

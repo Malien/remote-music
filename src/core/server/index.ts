@@ -8,9 +8,7 @@ export { ClientServerAdapter, StreamingClientServerAdapter, PlayerServerAdapter 
 export const ws = { WSClientServerAdapter, WSPlayerServerAdapter }
 export { ClientServer, StreamingClientServer, PlayerServer } from "./server"
 
-interface ServerPair { client: ClientServer; player: PlayerServer }
-
-export function interconnectFrom(conf: ServerTuple): ServerPair {
+export function interconnectFrom(conf: ServerTuple): [ClientServer, PlayerServer] {
     let client: ClientServer
     let player: PlayerServer
     let cache = new Cache<RemotePlayer>()
@@ -28,5 +26,5 @@ export function interconnectFrom(conf: ServerTuple): ServerPair {
         default:
             throw new Error("invalid preferences object")
     }
-    return { client, player }
+    return [client, player]
 }
