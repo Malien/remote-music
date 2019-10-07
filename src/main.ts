@@ -3,10 +3,9 @@ import { BrowserWindow, app, ipcMain, IpcMainEvent } from "electron"
 require("electron-reload")(__dirname, {electron: require("./../node_modules/electron")})
 import { platform } from "os"
 
-import pref, {Preferences, PrefConstructorArgs, ClientConfig, PlayerConfig, ServerType} from "./shared/preferences"
+import pref, {Preferences, PrefConstructorArgs, ClientConfig, PlayerConfig } from "./shared/preferences"
 import Session, { PlayerSession, PlayerSessionLike } from "./shared/session"
-import { PlayerServer, ClientServer } from "./core/server/server"
-import { interconnectFrom } from "./core/server/util"
+import { PlayerServer, ClientServer, interconnectFrom } from "./core/server"
 import { Spotify } from "./shared/apis"
 import { sendViaClient } from "./processComms"
 let requireSetup = !pref.canBeMerged(pref.path)

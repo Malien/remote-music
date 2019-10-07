@@ -36,6 +36,7 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
 
         ipcRenderer.on("close", (event) => ipcRenderer.send("session-update", this.state))
         ipcRenderer.on("auth-token", (event, service, { token, refreshToken, ttl }: AuthTokensBundle) => {
+            alert(service + ": " + token)
             if (service === "spoitify") {
                 let services: ServiceMap = { 
                     ...this.state.services, 
