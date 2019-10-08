@@ -134,7 +134,12 @@ export async function authorize(scopes: Scopes[]): Promise<AuthTokensBundle> {
                 }
                 request.post("https://accounts.spotify.com/api/token", {form: req})
                     .then(res => {
-                        resolve(res)
+                        let spres = JSON.parse(res)
+                        resolve({
+                            token: spres.access_token,
+                            ttl: spres.expires_in,
+                            refreshToken: spres.refresh_token
+                        })
                     }, reject).catch(reject)
             }
             authWin.close()

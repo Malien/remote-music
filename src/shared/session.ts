@@ -1,7 +1,7 @@
 import { writeFile, readFile, PathLike } from "fs"
 import { platform } from "os"
 
-import { PlayerStatus, Song, ServiceAvailability, Services } from "./components"
+import { PlayerStatus, ServiceAvailability, Services } from "./components"
 
 
 export interface ServiceInfo {
@@ -16,7 +16,7 @@ export interface ServiceMap {
 export interface PlayerSessionLike {
     status: PlayerStatus;
     services: ServiceMap;
-    service?: Services;
+    service?: string;
 }
 
 export class PlayerSession implements PlayerSessionLike {

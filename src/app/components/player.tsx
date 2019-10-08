@@ -2,14 +2,14 @@
 import { ipcRenderer } from "electron"
 import React, { FunctionComponent, Component, RefObject, useEffect, useRef } from "react"
 
-import { PlayerStatus, Song, ServiceAvailability, Services } from "../../shared/components"
+import { Song, ServiceAvailability, Services } from "../../shared/components"
 
 import { noArtwork } from "./server"
 import { ThumbList, Dropdown } from "./layout"
 
 interface ServiceList {
     services: { [key: string]: { availability: ServiceAvailability; displayName?: string } };
-    service?: Services;
+    service?: string;
     onSelect?: (service: string) => void;
 }
 
@@ -17,7 +17,7 @@ interface ServiceDisplayProps {
     service: string;
     availability: ServiceAvailability;
     selected?: boolean;
-    click?: (event: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => void;
+    click?: (event: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 }
 
 interface PlayerProps extends ServiceList, ControlsDelegate, SliderDelegate {
@@ -30,7 +30,7 @@ interface PlayerProps extends ServiceList, ControlsDelegate, SliderDelegate {
 export const ServiceDisplay: FunctionComponent<ServiceDisplayProps> = props => {
     return <>
         <a className="player-service" onClick={props.click}>
-            <input type="checkbox" name={props.service} className="player-service-box" checked={props.selected} />
+            <input type="checkbox" name={props.service} className="player-service-box" checked={props.selected || false} onClick={props.click} />
             <span className="player-service-name">{props.service}</span>
             <span
                 className={"player-service-status" + (props.availability == ServiceAvailability.connected
@@ -66,7 +66,7 @@ export const Player: FunctionComponent<PlayerProps> = props => {
             <ServiceDisplay
                 service={displayName ? displayName : service}
                 availability={availability}
-                selected={props.service && props.service == service}
+                selected={props.service ? props.service == service : false}
                 click={() => { if (props.onSelect) props.onSelect(service) }}
                 key={entries.length}
             />)
@@ -74,7 +74,11 @@ export const Player: FunctionComponent<PlayerProps> = props => {
 
     return <div className="player-container">
         <div className="player-display" ref={displayRef}>
-            <Dropdown title={props.service ? props.service : "Select music provider"}>
+            <Dropdown title={props.service
+                ? (Services[props.service] 
+                    ? Services[props.service]
+                    : props.service)
+                : "Select music provider"}>
                 <ThumbList>{entries}</ThumbList>
             </Dropdown>
             <img draggable={false} className="player-display-background" src={props.current ? (props.current.artwork || noArtwork) : noArtwork} />

@@ -33,13 +33,12 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
 
         ipcRenderer.on("close", (event) => ipcRenderer.send("session-update", this.state))
         ipcRenderer.on("auth-token", (event, service, { token, refreshToken, ttl }: AuthTokensBundle) => {
-            alert(service + ": " + token)
-            if (service === "spoitify") {
+            if (service === "spotify") {
                 let services: ServiceMap = {
                     ...this.state.services,
-                    "spotify": { availability: ServiceAvailability.connected, token, ttl, refreshToken }
+                    "spotify": { availability: ServiceAvailability.connected, token, ttl, refreshToken },
                 }
-                this.setState({ ...this.state, services })
+                this.setState({ ...this.state, services, service: "spotify" })
                 setTimeout(this.refreshSpotifyToken, ttl * 1000 * 0.9)
             }
         })
