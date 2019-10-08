@@ -20,7 +20,11 @@ export interface PlayerSessionLike {
 }
 
 export class PlayerSession implements PlayerSessionLike {
-    public services = {}
+    public services = {
+        spotify: {
+            availability: ServiceAvailability.notConnected
+        }
+    }
     public service?: Services | undefined
     // public current: Song | null = null;
     // public progress: number = 0;

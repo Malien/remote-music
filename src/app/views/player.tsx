@@ -3,7 +3,7 @@ import React, { FunctionComponent, useState, useEffect } from "react"
 import ReactDOM from "react-dom"
 import { ipcRenderer } from "electron"
 
-import { PlayerStatusChange, PlayerStatus, AuthTokensBundle, ServiceAvailability, Services } from "../../shared/components"
+import { PlayerStatusChange, PlayerStatus, AuthTokensBundle, ServiceAvailability, Services, APIServiceState } from "../../shared/components"
 import { PlayerConfig } from "../../shared/preferences"
 import { PlayerSessionLike, ServiceMap } from "../../shared/session"
 import { PlayerServerRequest } from "../../shared/comms"
@@ -38,7 +38,9 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
                     ...this.state.services,
                     "spotify": { availability: ServiceAvailability.connected, token, ttl, refreshToken },
                 }
-                this.setState({ ...this.state, services, service: "spotify" })
+                let statusServices = { ...this.state.status.services, "spotify": APIServiceState.authorized }
+                let status = { ...this.state.status, ...statusServices }
+                this.setState({ status, services, service: "spotify" })
                 setTimeout(this.refreshSpotifyToken, ttl * 1000 * 0.9)
             }
         })
@@ -54,14 +56,20 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
     private auth(service: Services) {
         switch (service) {
             case Services.spotify:
-                ipcRenderer.send("player-auth-request", "spotify")
+                ipcRenderer.send("auth-request", "spotify")
                 break
             default: break
         }
     }
 
     private refreshSpotifyToken() {
-
+        if (this.state.services.spotify &&
+            this.state.services.spotify.refreshToken &&
+            this.state.status.services.spotify !== APIServiceState.ivalid) {
+            ipcRenderer.send("refresh-request", "spotify", this.state.services.spotify.refreshToken)
+        } else {
+            ipcRenderer.send("auth-request", "spotify")
+        }
     }
 
     private updateStatus(newData: any) {

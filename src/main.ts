@@ -8,6 +8,7 @@ import Session, { PlayerSession, PlayerSessionLike } from "./shared/session"
 import { PlayerServer, ClientServer, interconnectFrom } from "./core/server"
 import { Spotify } from "./shared/apis"
 import { sendViaClient } from "./processComms"
+import { refreshToken } from "./shared/apis/spotify"
 let requireSetup = !pref.canBeMerged(pref.path)
 
 let player: PlayerServer
@@ -116,10 +117,10 @@ function playerWindow(config: PlayerConfig) {
     }).on("player-init", (event) => {
         if (playerWin.webContents == event.sender) playerWin.show()
     }).on("session-update", (event, session: PlayerSessionLike) => {
-        Session.save(Session.path, session)
-    }).on("player-auth-request", async (event, service) => {
+        if (playerWin.webContents == event.sender) Session.save(Session.path, session)
+    }).on("auth-request", async (event, service) => {
         if (playerWin.webContents == event.sender)
-            if (service === "spotify") {
+            if (service === "spotify" && preferences.client) {
                 let tokens = await Spotify.authorize([Spotify.Scopes.userLibraryRead, Spotify.Scopes.streaming])
                 playerWin.webContents.send("auth-token", "spotify", tokens)
                 if (preferences.client) sendViaClient(preferences.client.client, {
@@ -129,7 +130,14 @@ function playerWindow(config: PlayerConfig) {
                         refreshToken: tokens.refreshToken
                     }
                 })
-            }
+            } else throw new Error("Not supported service " + service)
+    }).on("refresh-request", async (event, service, refreshToken) => {
+        if (playerWin.webContents == event.sender) {
+            if (service === "spotify") {
+                let token = await Spotify.refreshToken(refreshToken)
+                playerWin.webContents.send("auth-token", "spotify", token)
+            } else throw new Error("Not supported service " + service)
+        }
     })
     playerWin.loadFile("./dist/app/views/player.html")
     ipcMain.on("player-ready", (event) => {

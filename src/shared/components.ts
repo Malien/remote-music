@@ -62,7 +62,7 @@ export enum Services {
 export interface AuthTokensBundle {
     token: string;
     ttl: number;
-    refreshToken: string;
+    refreshToken?: string;
 }
 
 export enum APIServiceState {

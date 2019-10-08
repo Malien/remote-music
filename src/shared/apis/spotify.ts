@@ -26,8 +26,9 @@ export interface AuthCodeResponse {
 
 interface AuthTokenRequest {
     grant_type: string;
-    code: string;
-    redirect_uri: string;
+    refresh_token?: string;
+    code?: string;
+    redirect_uri?: string;
     client_id?: string;
     client_secret?: string;
 }
@@ -62,40 +63,6 @@ export function authorizeURL({clientId, responseType, redirectUri, state, scope,
     return `https://accounts.spotify.com/authorize?client_id=${clientId}&response_type=${responseType}&redirect_uri=${encodeURIComponent(redirectUri)}${state ? `&state=${state}` : ""}${scope ? `&scope=${encodeURIComponent(scope.reduce<string>((prev, cur) => prev + " " + cur, ""))}`: ""}${showDialog ? `&show_dialog=${showDialog}` : ""}`
 }
 
-
-let authCount = 0
-let openAuthWindows: {[key: string]: BrowserWindow | undefined} = {}
-export async function callbackListener(res: AuthCodeResponse) {
-    doneServing()
-    let authWin = openAuthWindows[res.state]
-    if (authWin) {
-        authWin.close()
-        delete openAuthWindows[res.state]
-    }
-
-    console.log(res)
-    
-    if (res.error) {
-        console.error(`Spotify: ${res.error}`)
-    } else if (res.code) {
-        let req: AuthTokenRequest = {
-            grant_type: "authorization_code",
-            code: res.code,
-            redirect_uri: redirectURI
-        }
-        request.post("https://accounts.spotify.com/api/token", {
-            form: req,
-            headers: {
-                Authorization: new Buffer(spotifyID + ":" + await Keys.spotify()).toString("base64")
-            }
-        }).then(res => {
-            console.log(res)
-        }, rej => {
-            console.error(rej)
-        }).catch(console.error)
-    }
-}
-
 export async function authorize(scopes: Scopes[]): Promise<AuthTokensBundle> {
     return new Promise<AuthTokensBundle>((resolve, reject) => {
         servePage()
@@ -103,7 +70,6 @@ export async function authorize(scopes: Scopes[]): Promise<AuthTokensBundle> {
             clientId: spotifyID,
             responseType: "code",
             redirectUri: redirectURI,
-            state: String(authCount++),
             scope: scopes
         }
         let queryString = authorizeURL(req)
@@ -129,22 +95,51 @@ export async function authorize(scopes: Scopes[]): Promise<AuthTokensBundle> {
                     grant_type: "authorization_code",
                     code: params.code,
                     redirect_uri: redirectURI,
-                    client_id: spotifyID,
-                    client_secret: await Keys.spotify()
                 }
-                request.post("https://accounts.spotify.com/api/token", {form: req})
-                    .then(res => {
-                        let spres = JSON.parse(res)
-                        resolve({
-                            token: spres.access_token,
-                            ttl: spres.expires_in,
-                            refreshToken: spres.refresh_token
-                        })
-                    }, reject).catch(reject)
+                try {
+                    let res = await request.post("https://accounts.spotify.com/api/token", {
+                        form: req, 
+                        headers: {
+                            Authorization: "Basic " + Buffer.from(spotifyID + ":" + await Keys.spotify()).toString("base64")
+                        }
+                    })
+                    let spres = JSON.parse(res)
+                    resolve({
+                        token: spres.access_token,
+                        ttl: spres.expires_in,
+                        refreshToken: spres.refresh_token
+                    })
+                } catch(err) {
+                    reject(err)
+                }
             }
             authWin.close()
         })
         authWin.loadURL(queryString)
         authWin.webContents.on("dom-ready", () => authWin.show())
+    })
+}
+
+export function refreshToken(refresh_token: string): Promise<AuthTokensBundle> {
+    return new Promise(async (resolve, reject) => {
+        let req: AuthTokenRequest = {
+            grant_type: "refresh_token",
+            refresh_token
+        }
+        try {
+            let res = await request.post("https://accounts.spotify.com/api/token", {
+                form: req,
+                headers: {
+                    Authorization: "Basic " + Buffer.from(spotifyID + ":" + await Keys.spotify()).toString("base64")
+                }
+            })
+            let spres = JSON.parse(res)
+            resolve({
+                token: spres.access_token,
+                ttl: spres.expires_in
+            })
+        } catch (err) {
+            reject(err)
+        }
     })
 }
