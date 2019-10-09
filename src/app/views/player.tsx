@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { FunctionComponent, useState, useEffect } from "react"
 import ReactDOM from "react-dom"
@@ -15,7 +16,6 @@ interface Req {
     type: string;
     payload?: any;
 }
-// declare namespace MusicKit {}
 
 interface PlayerAppProps {
     config: PlayerConfig;
@@ -26,6 +26,7 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
     private id?: string
     private interval: number
     private statusUpdateQueue: PlayerStatusChange[] = []
+    private spotifyPlayer: Spotify.SpotifyPlayer | undefined
 
     public constructor(props: PlayerAppProps) {
         super(props)
@@ -41,6 +42,10 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
                 let statusServices = { ...this.state.status.services, "spotify": APIServiceState.authorized }
                 let status = { ...this.state.status, ...statusServices }
                 this.setState({ status, services, service: "spotify" })
+                this.spotifyPlayer = new Spotify.Player({
+                    name: "Remote music",
+                    getOAuthToken: cb => cb(token)
+                })
                 setTimeout(this.refreshSpotifyToken, ttl * 1000 * 0.9)
             }
         })
@@ -51,6 +56,31 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
         }).bind(this)
 
         this.onServiceSelect = this.onServiceSelect.bind(this)
+    }
+
+    private configureSpotifyPlayer(tokenFn: () => string | undefined): Spotify.SpotifyPlayer {
+        let player = new Spotify.Player({
+            name: "Remote music",
+            getOAuthToken: cb => {
+                let tkn = tokenFn()
+                if (tkn) cb(tkn)
+                else this.refreshSpotifyToken.bind(this)
+            }
+        })
+
+        player.addListener("account_error", console.error)
+        player.addListener("initialization_error", console.error)
+        player.addListener("authentication_error", this.refreshSpotifyToken.bind(this))
+        player.addListener("playback_error", console.error)
+
+        player.addListener("ready", (inst) => {
+
+        })
+        player.addListener("not_ready", (inst) => {
+
+        })
+
+        return player
     }
 
     private auth(service: Services) {
@@ -97,6 +127,12 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
         switch (availability) {
             case "Connected":
                 this.updateStatus({ service: service })
+                if (service === "spotify" && this.state.service !== "spotify") {
+                    if (!this.spotifyPlayer) this.spotifyPlayer = this.configureSpotifyPlayer(() => this.state.services.spotify.token)
+                    this.spotifyPlayer.connect()
+                } else {
+                    if (this.state.service === "spotify" && this.spotifyPlayer) this.spotifyPlayer.disconnect()
+                }
                 break
             case "Not connected":
                 this.auth(Services[service])

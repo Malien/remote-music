@@ -121,7 +121,7 @@ function playerWindow(config: PlayerConfig) {
     }).on("auth-request", async (event, service) => {
         if (playerWin.webContents == event.sender)
             if (service === "spotify" && preferences.client) {
-                let tokens = await Spotify.authorize([Spotify.Scopes.userLibraryRead, Spotify.Scopes.streaming])
+                let tokens = await Spotify.authorize([Spotify.Scopes.userReadPrivate, Spotify.Scopes.streaming, Spotify.Scopes.userReadEmail])
                 playerWin.webContents.send("auth-token", "spotify", tokens)
                 if (preferences.client) sendViaClient(preferences.client.client, {
                     type: "serviceToken", 
