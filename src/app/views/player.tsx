@@ -3,14 +3,16 @@
 import React, { FunctionComponent, useState, useEffect } from "react"
 import ReactDOM from "react-dom"
 import { ipcRenderer } from "electron"
+import SpotifyWebAPI from "spotify-web-api-js"
 
 import { PlayerStatusChange, PlayerStatus, AuthTokensBundle, ServiceAvailability, Services, APIServiceState } from "../../shared/components"
 import { PlayerConfig } from "../../shared/preferences"
-import { PlayerSessionLike, ServiceMap } from "../../shared/session"
+import { PlayerSessionLike, ServiceMap, ServiceInfo } from "../../shared/session"
 import { PlayerServerRequest } from "../../shared/comms"
 
 import { TransparentTitlebar } from "../components/window"
 import { Player } from "../components/player"
+import SpotifyWebApi from "spotify-web-api-js"
 
 interface Req {
     type: string;
@@ -26,7 +28,14 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
     private id?: string
     private interval: number
     private statusUpdateQueue: PlayerStatusChange[] = []
-    private spotifyPlayer: Spotify.SpotifyPlayer | undefined
+    private spotifyPlayer = new Spotify.Player({
+        name: "Remote Music",
+        getOAuthToken: (cb => {
+            let tkn = this.state.services.spotify.token
+            if (tkn) cb(tkn)
+        }).bind(this)
+    })
+    private spotifyAPI = new SpotifyWebApi()
 
     public constructor(props: PlayerAppProps) {
         super(props)
@@ -35,20 +44,40 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
         ipcRenderer.on("close", (event) => ipcRenderer.send("session-update", this.state))
         ipcRenderer.on("auth-token", (event, service, { token, refreshToken, ttl }: AuthTokensBundle) => {
             if (service === "spotify") {
+                let spotify: ServiceInfo
+                if (this.state.services.spotify.refreshToken) {
+                    spotify = {
+                        availability: ServiceAvailability.connected,
+                        token,
+                        ttl,
+                        refreshToken: this.state.services.spotify.refreshToken
+                    }
+                } else {
+                    spotify = {
+                        availability: ServiceAvailability.connected,
+                        token,
+                        ttl,
+                        refreshToken
+                    }
+                }
                 let services: ServiceMap = {
                     ...this.state.services,
-                    "spotify": { availability: ServiceAvailability.connected, token, ttl, refreshToken },
+                    spotify
                 }
                 let statusServices = { ...this.state.status.services, "spotify": APIServiceState.authorized }
                 let status = { ...this.state.status, ...statusServices }
                 this.setState({ status, services, service: "spotify" })
-                this.spotifyPlayer = new Spotify.Player({
-                    name: "Remote music",
-                    getOAuthToken: cb => cb(token)
-                })
+                this.spotifyAPI.setAccessToken(token)
                 setTimeout(this.refreshSpotifyToken, ttl * 1000 * 0.9)
             }
         })
+
+        this.spotifyPlayer.addListener("account_error", console.error)
+        this.spotifyPlayer.addListener("initialization_error", console.error)
+        this.spotifyPlayer.addListener("authentication_error", this.refreshSpotifyToken.bind(this))
+        this.spotifyPlayer.addListener("playback_error", console.error)
+        this.spotifyPlayer.addListener("ready", console.log)
+        this.spotifyPlayer.addListener("not_ready", console.log)
 
         this.ws = new WebSocket(props.config.address + ":" + props.config.port)
         this.ws.onopen = (() => {
@@ -56,31 +85,10 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
         }).bind(this)
 
         this.onServiceSelect = this.onServiceSelect.bind(this)
-    }
-
-    private configureSpotifyPlayer(tokenFn: () => string | undefined): Spotify.SpotifyPlayer {
-        let player = new Spotify.Player({
-            name: "Remote music",
-            getOAuthToken: cb => {
-                let tkn = tokenFn()
-                if (tkn) cb(tkn)
-                else this.refreshSpotifyToken.bind(this)
-            }
-        })
-
-        player.addListener("account_error", console.error)
-        player.addListener("initialization_error", console.error)
-        player.addListener("authentication_error", this.refreshSpotifyToken.bind(this))
-        player.addListener("playback_error", console.error)
-
-        player.addListener("ready", (inst) => {
-
-        })
-        player.addListener("not_ready", (inst) => {
-
-        })
-
-        return player
+        this.onNext = this.onNext.bind(this)
+        this.onPlay = this.onPlay.bind(this)
+        this.onPrev = this.onPrev.bind(this)
+        this.onScrub = this.onScrub.bind(this)
     }
 
     private auth(service: Services) {
@@ -102,7 +110,7 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
         }
     }
 
-    private updateStatus(newData: any) {
+    private updateStatus(newData: PlayerStatusChange) {
         let status: PlayerStatus = { ...this.state.status, ...newData }
         this.setState({ ...this.state, status })
     }
@@ -126,9 +134,8 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
         let availability = this.state.services[service].availability
         switch (availability) {
             case "Connected":
-                this.updateStatus({ service: service })
+                this.setState({ ...this.state, service: service })
                 if (service === "spotify" && this.state.service !== "spotify") {
-                    if (!this.spotifyPlayer) this.spotifyPlayer = this.configureSpotifyPlayer(() => this.state.services.spotify.token)
                     this.spotifyPlayer.connect()
                 } else {
                     if (this.state.service === "spotify" && this.spotifyPlayer) this.spotifyPlayer.disconnect()
@@ -141,6 +148,50 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
             case "Not reachable":
             default:
         }
+    }
+
+    private onPlay() {
+        switch (this.state.service) {
+            case "spotify":
+                this.spotifyPlayer.togglePlay()
+                break
+        }
+        if (this.state.service) this.updateStatus({ playing: !this.state.status.playing })
+    }
+
+    private onNext() {
+        switch (this.state.service) {
+            case "spotify":
+                this.spotifyPlayer.nextTrack()
+                break
+        }
+        if (this.state.service) {
+            if (this.state.status.queue.length > 0) {
+                let current = this.state.status.queue[0]
+                this.updateStatus({ queue: this.state.status.queue.slice(1), current })
+            } else {
+                this.updateStatus({ current: null })
+            }
+        }
+    }
+
+    //TODO: Yeaah... I should've had a history somwhere in the state
+    private onPrev() {
+        switch(this.state.service) {
+            case "spotify":
+                this.spotifyPlayer.previousTrack()
+                break
+        }
+    }
+
+    private onScrub(progress: number) {
+        switch(this.state.service) {
+            case "spotify":
+                this.spotifyPlayer.seek(progress*1000)
+                break
+        }
+        if (this.state.status.current && this.state.service)
+            this.updateStatus({ progress })
     }
 
     public componentDidMount() {
@@ -200,13 +251,10 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
                         .map(([service, info]) => [service, { availability: info.availability, displayName: Services[service] }])
                 )}
                 service={this.state.service}
-                onScrub={progress => {
-                    if (this.state.status.current)
-                        this.updateStatus({ progress })
-                }}
-                onPlay={() => {
-                    this.updateStatus({ playing: !this.state.status.playing })
-                }}
+                onScrub={this.onScrub}
+                onPlay={this.onPlay}
+                onNext={this.onNext}
+                onPrev={this.onPrev}
                 onSelect={this.onServiceSelect} />
         </TransparentTitlebar>
     }
