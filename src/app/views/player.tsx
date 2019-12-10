@@ -3,7 +3,6 @@
 import React, { FunctionComponent, useState, useEffect } from "react"
 import ReactDOM from "react-dom"
 import { ipcRenderer } from "electron"
-import SpotifyWebAPI from "spotify-web-api-js"
 
 import { PlayerStatusChange, PlayerStatus, AuthTokensBundle, ServiceAvailability, Services, APIServiceState } from "../../shared/components"
 import { PlayerConfig } from "../../shared/preferences"
@@ -28,13 +27,7 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
     private id?: string
     private interval: number
     private statusUpdateQueue: PlayerStatusChange[] = []
-    private spotifyPlayer = new Spotify.Player({
-        name: "Remote Music",
-        getOAuthToken: (cb => {
-            let tkn = this.state.services.spotify.token
-            if (tkn) cb(tkn)
-        }).bind(this)
-    })
+    private spotifyPlayer: Spotify.SpotifyPlayer | undefined
     private spotifyAPI = new SpotifyWebApi()
 
     public constructor(props: PlayerAppProps) {
@@ -68,16 +61,10 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
                 let status = { ...this.state.status, ...statusServices }
                 this.setState({ status, services, service: "spotify" })
                 this.spotifyAPI.setAccessToken(token)
+                if (!this.spotifyPlayer) this.spotifyPlayer = this.setupSpotify(() => this.state.services.spotify.token)
                 setTimeout(this.refreshSpotifyToken, ttl * 1000 * 0.9)
             }
         })
-
-        this.spotifyPlayer.addListener("account_error", console.error)
-        this.spotifyPlayer.addListener("initialization_error", console.error)
-        this.spotifyPlayer.addListener("authentication_error", this.refreshSpotifyToken.bind(this))
-        this.spotifyPlayer.addListener("playback_error", console.error)
-        this.spotifyPlayer.addListener("ready", console.log)
-        this.spotifyPlayer.addListener("not_ready", console.log)
 
         this.ws = new WebSocket(props.config.address + ":" + props.config.port)
         this.ws.onopen = (() => {
@@ -89,6 +76,23 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
         this.onPlay = this.onPlay.bind(this)
         this.onPrev = this.onPrev.bind(this)
         this.onScrub = this.onScrub.bind(this)
+    }
+
+    private setupSpotify(tokenFunc: () => string | undefined): Spotify.SpotifyPlayer {
+        let player = new Spotify.Player({
+            name: "Remote Music",
+            getOAuthToken: (cb => {
+                let tkn = tokenFunc()
+                if (tkn) cb(tkn)
+            }).bind(this)
+        })
+        player.addListener("account_error", console.error)
+        player.addListener("initialization_error", console.error)
+        player.addListener("authentication_error", this.refreshSpotifyToken.bind(this))
+        player.addListener("playback_error", console.error)
+        player.addListener("ready", console.log)
+        player.addListener("not_ready", console.log)
+        return player
     }
 
     private auth(service: Services) {
@@ -136,6 +140,7 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
             case "Connected":
                 this.setState({ ...this.state, service: service })
                 if (service === "spotify" && this.state.service !== "spotify") {
+                    if (!this.spotifyPlayer) this.spotifyPlayer = this.setupSpotify(() => this.state.services.spotify.token)
                     this.spotifyPlayer.connect()
                 } else {
                     if (this.state.service === "spotify" && this.spotifyPlayer) this.spotifyPlayer.disconnect()
@@ -153,7 +158,7 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
     private onPlay() {
         switch (this.state.service) {
             case "spotify":
-                this.spotifyPlayer.togglePlay()
+                if (this.spotifyPlayer) this.spotifyPlayer.togglePlay()
                 break
         }
         if (this.state.service) this.updateStatus({ playing: !this.state.status.playing })
@@ -162,7 +167,7 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
     private onNext() {
         switch (this.state.service) {
             case "spotify":
-                this.spotifyPlayer.nextTrack()
+                if (this.spotifyPlayer) this.spotifyPlayer.nextTrack()
                 break
         }
         if (this.state.service) {
@@ -179,7 +184,7 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
     private onPrev() {
         switch(this.state.service) {
             case "spotify":
-                this.spotifyPlayer.previousTrack()
+                if (this.spotifyPlayer) this.spotifyPlayer.previousTrack()
                 break
         }
     }
@@ -187,7 +192,7 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
     private onScrub(progress: number) {
         switch(this.state.service) {
             case "spotify":
-                this.spotifyPlayer.seek(progress*1000)
+                if (this.spotifyPlayer) this.spotifyPlayer.seek(progress*1000)
                 break
         }
         if (this.state.status.current && this.state.service)
@@ -222,6 +227,9 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
                     break
             }
         }).bind(this)
+        window.onSpotifyWebPlaybackSDKReady = () => {
+            if (this.state.services.spotify.token) this.spotifyPlayer = this.setupSpotify(() => this.state.services.spotify.token)
+        }
     }
 
     public componentWillUpdate(prevProps: PlayerAppProps, prevState: PlayerSessionLike) {
