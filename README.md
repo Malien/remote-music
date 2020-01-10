@@ -1,4 +1,4 @@
-# remote-music
+# remote-music [WIP]
 This app is used to play your music from different streaming services (only Spotify is supported for now) and to remotely control music playback from different streaming services within the same app.
 
 <img src="https://github.com/Malien/remote-music/blob/master/doc/img/Screen%20Shot%202019-10-12%20at%2010.53.08%20AM.png" height="400px"> <img src="https://github.com/Malien/remote-music/blob/master/doc/img/Screen%20Shot%202019-10-12%20at%2010.53.22%20AM.png" height="400px">
