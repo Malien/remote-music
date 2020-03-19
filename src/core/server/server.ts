@@ -92,8 +92,8 @@ export class ClientServer {
         adapter.on("players", (sender) => {
             let payload = {}
             let keys = Array.from(_this.cache.keys())
-            for (let index in keys) {
-                payload[keys[index]] = (_this.cache.get(keys[index]) as RemotePlayer).name
+            for (let value of keys) {
+                payload[value] = (_this.cache.get(value) as RemotePlayer).name
             }
             sendObj.call(sender, { type: "players", payload })
         }).on("playerStatus", (id, sender, queueLimit = 0) => {

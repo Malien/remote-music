@@ -54,7 +54,7 @@ class PlayerDisplay extends React.Component<PlayerDisplayProps, PlayerDisplaySta
         super(props)
         this.state = {}
         this.ws = new WebSocket(props.config.address + ":" + props.config.port)
-        this.ws.onopen = (() => {setInterval(this.update.bind(this), 1000)}).bind(this)
+        this.ws.onopen = () => {setInterval(this.update.bind(this), 1000)}
     }
 
     private cmp(p: SelectionPlayer[]): boolean {
@@ -68,7 +68,6 @@ class PlayerDisplay extends React.Component<PlayerDisplayProps, PlayerDisplaySta
         this.ws.send(JSON.stringify({type: "players"}))
         this.ws.onmessage = ev => {
             let state: PlayerDisplayState
-            let playerCount = 0
             let res = JSON.parse(String(ev.data)) as ClientServerResponse
             if (res.type == "players") {
                 state = Object.assign({}, _this.state)
@@ -78,7 +77,6 @@ class PlayerDisplay extends React.Component<PlayerDisplayProps, PlayerDisplaySta
                 }
                 this.playerList = []
                 let ids = Object.keys(res.payload)
-                playerCount = ids.length
                 ids.forEach((id) => {
                     _this.ws.send(JSON.stringify({type: "playerStatus", payload:{id}}))
                 })
@@ -86,7 +84,7 @@ class PlayerDisplay extends React.Component<PlayerDisplayProps, PlayerDisplaySta
             else if (res.type == "playerStatus") {
                 let players = _this.playerList
                 players.push(res.payload)
-                if (playerCount <= _this.playerList.length && !_this.cmp(players)) {
+                if (!_this.cmp(players)) {
                     let found = false
                     players = players.filter(player => {
                         if (_this.props.player && player.id == _this.props.player.id) {
@@ -109,7 +107,7 @@ class PlayerDisplay extends React.Component<PlayerDisplayProps, PlayerDisplaySta
         let items: JSX.Element[] = []
         if (this.state.players) {
             items = this.state.players.map(player => 
-                <CompactPlayerStats name={player.name} song={player.status.current} click={event => {ipcRenderer.send("selection-select", player.id)}}/>)
+                <CompactPlayerStats key={player.id} name={player.name} song={player.status.current} click={event => {ipcRenderer.send("selection-select", player.id)}}/>)
         }
         return <div className="selection-margin">
             <LoadingArea loaded={Boolean(this.state.players)}>

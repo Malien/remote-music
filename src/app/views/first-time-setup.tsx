@@ -34,7 +34,7 @@ class Form extends Component<{}, FormState> {
         return ((!this.state.client) || (this.state.client && Boolean(this.state.address) && Boolean(this.state.clientPort)))
                 && ((!this.state.server) || (this.state.server && Boolean(this.state.clientPort) && Boolean(this.state.playerPort)))
                 && ((!this.state.player) || (this.state.player && Boolean(this.state.address) && Boolean(this.state.playerPort)) && Boolean(this.state.playerName))
-                && (this.state.client || this.state.server || (this.state.client && this.state.player))
+                && (this.state.client || this.state.server || this.state.player)
     }
 
     public render() {

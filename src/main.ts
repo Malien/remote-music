@@ -8,7 +8,6 @@ import Session, { PlayerSession, PlayerSessionLike } from "./shared/session"
 import { PlayerServer, ClientServer, interconnectFrom } from "./core/server"
 import { Spotify } from "./shared/apis"
 import { sendViaClient } from "./processComms"
-import { refreshToken } from "./shared/apis/spotify"
 let requireSetup = !pref.canBeMerged(pref.path)
 
 let player: PlayerServer

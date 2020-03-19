@@ -67,9 +67,9 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
         })
 
         this.ws = new WebSocket(props.config.address + ":" + props.config.port)
-        this.ws.onopen = (() => {
+        this.ws.onopen = () => {
             this.send({ type: "register", payload: props.config.name })
-        }).bind(this)
+        }
 
         this.onServiceSelect = this.onServiceSelect.bind(this)
         this.onNext = this.onNext.bind(this)
@@ -84,7 +84,7 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
             getOAuthToken: (cb => {
                 let tkn = tokenFunc()
                 if (tkn) cb(tkn)
-            }).bind(this)
+            })
         })
         player.addListener("account_error", console.error)
         player.addListener("initialization_error", console.error)
@@ -200,7 +200,7 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
     }
 
     public componentDidMount() {
-        this.ws.onmessage = ((ev: MessageEvent) => {
+        this.ws.onmessage = (ev: MessageEvent) => {
             let msg = JSON.parse(ev.data) as PlayerServerRequest
             switch (msg.type) {
                 case "register":
@@ -226,7 +226,7 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
                     this.setState(Object.assign({}, this.state.status, msg.payload))
                     break
             }
-        }).bind(this)
+        }
         window.onSpotifyWebPlaybackSDKReady = () => {
             if (this.state.services.spotify.token) this.spotifyPlayer = this.setupSpotify(() => this.state.services.spotify.token)
         }
@@ -238,7 +238,7 @@ class PlayerApp extends React.Component<PlayerAppProps, PlayerSessionLike> {
             Object.entries(prevState.status).forEach(([key, val]) => {
                 if (this.state.status[key] != val) out[key] = val
             })
-            if (out && this.ws.readyState == WebSocket.OPEN) this.statusUpdate(out)
+            if (this.ws.readyState == WebSocket.OPEN) this.statusUpdate(out)
             else this.statusUpdateQueue.push(out)
         }
     }
