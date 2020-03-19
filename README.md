@@ -1,3 +1,4 @@
+[![DeepScan grade](https://deepscan.io/api/teams/8152/projects/10306/branches/140836/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=8152&pid=10306&bid=140836)
 # remote-music [WIP]
 This app is used to play your music from different streaming services (only Spotify is supported for now) and to remotely control music playback from different streaming services within the same app.
 
