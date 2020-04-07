@@ -59,13 +59,13 @@
     "musickit-typescript": "^1.2.4",
     "react-devtools": "^3.6.3",
     "requirejs": "^2.3.6",
+    "serialize-javascript": ">=2.1.1",
     "source-map-loader": "^0.2.4",
     "terser": "^4.2.0",
     "ts-loader": "^6.0.4",
     "typescript": "^3.5.3",
     "webpack": "^4.39.2",
-    "webpack-cli": "^3.3.7",
-    "serialize-javascript": ">=2.1.1"
+    "webpack-cli": "^3.3.7"
   },
   "dependencies": {
     "keytar": "^5.0.0-beta.3",
