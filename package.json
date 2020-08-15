@@ -59,7 +59,7 @@
     "musickit-typescript": "^1.2.4",
     "react-devtools": "^3.6.3",
     "requirejs": "^2.3.6",
-    "serialize-javascript": ">=2.1.1",
+    "serialize-javascript": ">=3.1.0",
     "source-map-loader": "^0.2.4",
     "terser": "^4.2.0",
     "ts-loader": "^6.0.4",
