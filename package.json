@@ -74,7 +74,7 @@
     "request-promise-native": "^1.0.7",
     "spotify-web-api-js": "^1.2.0",
     "uuid": "^3.3.3",
-    "ws": "^6.2.1"
+    "ws": "^7.4.6"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.1",
